@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+
+{% block title %}Bienvenue - Crypto Monitor{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8 text-center mb-5">
+            <h1 class="display-3 fw-bold mb-4" style="background: linear-gradient(135deg, #6366f1, #8b5cf6); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                <i class="bi bi-graph-up-arrow"></i> Crypto Monitor
+            </h1>
+            <p class="lead text-muted">
+                Votre plateforme de monitoring professionnelle pour les cryptomonnaies, devises FIAT et matières premières tokenisées
+            </p>
+        </div>
+    </div>
+    
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card shadow-lg">
+                <div class="card-body p-5">
+                    <h3 class="card-title text-center mb-4">
+                        <i class="bi bi-person-circle"></i> Sélectionnez votre profil
+                    </h3>
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <!-- Type de profil -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">
+                                <i class="bi bi-person-badge"></i> Type de profil
+                            </label>
+                            <select name="profile_type" class="form-select form-select-lg" required>
+                                <option value="">Choisissez votre profil...</option>
+                                <option value="beginner">
+                                    <i class="bi bi-egg"></i> Investisseur débutant
+                                </option>
+                                <option value="trader">
+                                    <i class="bi bi-lightning"></i> Trader confirmé
+                                </option>
+                                <option value="analyst">
+                                    <i class="bi bi-graph-up"></i> Analyste
+                                </option>
+                            </select>
+                            <div class="form-text">
+                                Sélectionnez le profil qui correspond le mieux à votre expérience
+                            </div>
+                        </div>
+                        
+                        <!-- Type de marché -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">
+                                <i class="bi bi-currency-exchange"></i> Marché préféré
+                            </label>
+                            <select name="market_preference" class="form-select form-select-lg" required>
+                                <option value="">Choisissez un marché...</option>
+                                <option value="crypto">
+                                    <i class="bi bi-coin"></i> Cryptomonnaies
+                                </option>
+                                <option value="fiat">
+                                    <i class="bi bi-cash-stack"></i> Devises FIAT
+                                </option>
+                                <option value="commodities">
+                                    <i class="bi bi-gem"></i> Matières premières tokenisées
+                                </option>
+                            </select>
+                            <div class="form-text">
+                                Choisissez le type de marché que vous souhaitez suivre principalement
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="bi bi-arrow-right-circle"></i> Commencer
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Fonctionnalités -->
+    <div class="row mt-5 g-4">
+        <div class="col-md-4">
+            <div class="card h-100 text-center">
+                <div class="card-body">
+                    <div class="mb-3" style="font-size: 3rem; color: #6366f1;">
+                        <i class="bi bi-speedometer2"></i>
+                    </div>
+                    <h5 class="card-title">Données en temps réel</h5>
+                    <p class="card-text text-muted">
+                        Accédez aux prix et variations en temps réel grâce à l'API Binance
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card h-100 text-center">
+                <div class="card-body">
+                    <div class="mb-3" style="font-size: 3rem; color: #8b5cf6;">
+                        <i class="bi bi-graph-up"></i>
+                    </div>
+                    <h5 class="card-title">Analyses détaillées</h5>
+                    <p class="card-text text-muted">
+                        Graphiques interactifs et historique des transactions pour chaque paire
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card h-100 text-center">
+                <div class="card-body">
+                    <div class="mb-3" style="font-size: 3rem; color: #10b981;">
+                        <i class="bi bi-star-fill"></i>
+                    </div>
+                    <h5 class="card-title">Portfolio personnalisé</h5>
+                    <p class="card-text text-muted">
+                        Créez votre watchlist et simulez votre portefeuille d'investissement
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .form-select option {
+        padding: 10px;
+    }
+</style>
+{% endblock %}
+

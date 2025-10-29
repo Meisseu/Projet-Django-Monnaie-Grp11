@@ -1,0 +1,387 @@
+{% extends "base.html" %}
+
+{% block title %}{{ symbol }} - Crypto Monitor{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- En-tête -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'home:index' %}" class="text-decoration-none">Accueil</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'search:index' %}" class="text-decoration-none">Recherche</a></li>
+                    <li class="breadcrumb-item active">{{ symbol }}</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+    
+    <!-- Informations principales -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-4">
+                        <div>
+                            <h2 class="mb-2">{{ symbol }}</h2>
+                            <h3 class="mb-0">${{ current_price.price }}</h3>
+                        </div>
+                        <div class="text-end">
+                            <button class="btn btn-primary mb-2" onclick="addToWatchlist('{{ symbol }}')">
+                                <i class="bi bi-star"></i> Watchlist
+                            </button>
+                            <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addPortfolioModal">
+                                <i class="bi bi-wallet2"></i> Portfolio
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Variations -->
+                    <div class="row g-3 mb-4">
+                        <div class="col-4">
+                            <div class="p-3 border rounded">
+                                <small class="text-muted">Variation 1h</small>
+                                <h5 class="mb-0 {% if change_1h|floatformat:2|slice:':1' == '-' %}price-down{% else %}price-up{% endif %}">
+                                    {{ change_1h }}%
+                                </h5>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="p-3 border rounded">
+                                <small class="text-muted">Variation 24h</small>
+                                <h5 class="mb-0 {% if change_24h|floatformat:2|slice:':1' == '-' %}price-down{% else %}price-up{% endif %}">
+                                    {{ change_24h }}%
+                                </h5>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="p-3 border rounded">
+                                <small class="text-muted">Variation 7j</small>
+                                <h5 class="mb-0 {% if change_7d|floatformat:2|slice:':1' == '-' %}price-down{% else %}price-up{% endif %}">
+                                    {{ change_7d }}%
+                                </h5>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Graphique principal -->
+                    <div class="btn-group mb-3" role="group">
+                        <input type="radio" class="btn-check" name="chartPeriod" id="chart1h" checked>
+                        <label class="btn btn-outline-primary" for="chart1h" onclick="showChart('1h')">1H</label>
+                        
+                        <input type="radio" class="btn-check" name="chartPeriod" id="chart1d">
+                        <label class="btn btn-outline-primary" for="chart1d" onclick="showChart('1d')">1J</label>
+                        
+                        <input type="radio" class="btn-check" name="chartPeriod" id="chart1w">
+                        <label class="btn btn-outline-primary" for="chart1w" onclick="showChart('1w')">1S</label>
+                    </div>
+                    
+                    <canvas id="priceChart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Statistiques -->
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-bar-chart"></i> Statistiques 24h</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <small class="text-muted">Volume</small>
+                        <h6>{{ volume }}</h6>
+                    </div>
+                    <div class="mb-3">
+                        <small class="text-muted">Volume en quote</small>
+                        <h6>{{ quote_volume }}</h6>
+                    </div>
+                    <div class="mb-3">
+                        <small class="text-muted">Plus haut (24h)</small>
+                        <h6>${{ high_24h }}</h6>
+                    </div>
+                    <div class="mb-3">
+                        <small class="text-muted">Plus bas (24h)</small>
+                        <h6>${{ low_24h }}</h6>
+                    </div>
+                    <hr>
+                    <div class="mb-3">
+                        <small class="text-muted">ATH (52 semaines)</small>
+                        <h6 class="price-up">${{ ath }}</h6>
+                    </div>
+                    <div class="mb-0">
+                        <small class="text-muted">ATL (52 semaines)</small>
+                        <h6 class="price-down">${{ atl }}</h6>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Carnet d'ordres et transactions récentes -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-book"></i> Carnet d'ordres</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-sm mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Prix (Achat)</th>
+                                    <th>Quantité</th>
+                                    <th>Prix (Vente)</th>
+                                    <th>Quantité</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for i in order_book.bids|slice:":10" %}
+                                <tr>
+                                    <td class="price-up">{{ i.0 }}</td>
+                                    <td>{{ i.1 }}</td>
+                                    {% if forloop.counter0 < order_book.asks|length %}
+                                    <td class="price-down">{{ order_book.asks|index:forloop.counter0|index:0 }}</td>
+                                    <td>{{ order_book.asks|index:forloop.counter0|index:1 }}</td>
+                                    {% else %}
+                                    <td>-</td>
+                                    <td>-</td>
+                                    {% endif %}
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-clock-history"></i> Transactions récentes</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-sm mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Prix</th>
+                                    <th>Quantité</th>
+                                    <th>Heure</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for trade in recent_trades %}
+                                <tr>
+                                    <td>{{ trade.price }}</td>
+                                    <td>{{ trade.qty }}</td>
+                                    <td>
+                                        <small class="text-muted">
+                                            {{ trade.time|date:"H:i:s" }}
+                                        </small>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Paires similaires -->
+    {% if similar_pairs %}
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-link-45deg"></i> Paires similaires</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        {% for pair in similar_pairs %}
+                        <div class="col-md-4 col-lg-2">
+                            <a href="{% url 'pairs:detail' pair.symbol %}" class="text-decoration-none">
+                                <div class="card text-center h-100">
+                                    <div class="card-body">
+                                        <h6 class="mb-2">{{ pair.symbol }}</h6>
+                                        <small class="d-block mb-1">${{ pair.price }}</small>
+                                        <small class="{% if pair.change|floatformat:2|slice:':1' == '-' %}price-down{% else %}price-up{% endif %}">
+                                            {{ pair.change }}%
+                                        </small>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Modal pour ajouter au portfolio -->
+<div class="modal fade" id="addPortfolioModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content" style="background: var(--card-bg);">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-wallet2"></i> Ajouter au Portfolio</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="portfolioForm">
+                    <div class="mb-3">
+                        <label class="form-label">Symbole</label>
+                        <input type="text" class="form-control" value="{{ symbol }}" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Quantité</label>
+                        <input type="number" class="form-control" id="quantity" step="0.00000001" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Prix d'achat</label>
+                        <input type="number" class="form-control" id="purchasePrice" step="0.01" 
+                               value="{{ current_price.price }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Notes (optionnel)</label>
+                        <textarea class="form-control" id="notes" rows="3"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-success" onclick="addToPortfolio()">
+                    <i class="bi bi-check-circle"></i> Ajouter
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Données des graphiques
+const chartData = {
+    '1h': {{ chart_data_1h|safe }},
+    '1d': {{ chart_data_1d|safe }},
+    '1w': {{ chart_data_1w|safe }}
+};
+
+let currentChart = null;
+let currentPeriod = '1h';
+
+// Créer le graphique initial
+showChart('1h');
+
+function showChart(period) {
+    currentPeriod = period;
+    const data = chartData[period];
+    
+    if (currentChart) {
+        currentChart.destroy();
+    }
+    
+    const ctx = document.getElementById('priceChart');
+    currentChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: data.labels,
+            datasets: [{
+                label: '{{ symbol }}',
+                data: data.prices,
+                borderColor: '#6366f1',
+                backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                borderWidth: 2,
+                fill: true,
+                tension: 0.4,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    mode: 'index',
+                    intersect: false,
+                    callbacks: {
+                        label: function(context) {
+                            return '$ ' + context.parsed.y.toFixed(2);
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    display: true,
+                    grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                    ticks: { color: '#94a3b8' }
+                },
+                y: {
+                    display: true,
+                    grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                    ticks: {
+                        color: '#94a3b8',
+                        callback: function(value) {
+                            return '$ ' + value.toFixed(2);
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+function addToWatchlist(symbol) {
+    fetch('/watchlist/add/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ symbol: symbol })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('✓ ' + symbol + ' ajouté à votre watchlist !');
+        } else {
+            alert('Erreur: ' + data.error);
+        }
+    });
+}
+
+function addToPortfolio() {
+    const quantity = document.getElementById('quantity').value;
+    const purchasePrice = document.getElementById('purchasePrice').value;
+    const notes = document.getElementById('notes').value;
+    
+    fetch('/watchlist/portfolio/add/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            symbol: '{{ symbol }}',
+            quantity: quantity,
+            purchase_price: purchasePrice,
+            notes: notes
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('✓ Ajouté au portfolio !');
+            bootstrap.Modal.getInstance(document.getElementById('addPortfolioModal')).hide();
+            document.getElementById('portfolioForm').reset();
+        } else {
+            alert('Erreur: ' + data.error);
+        }
+    });
+}
+</script>
+{% endblock %}
+

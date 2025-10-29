@@ -1,0 +1,2 @@
+# Crypto Monitor Django Project
+

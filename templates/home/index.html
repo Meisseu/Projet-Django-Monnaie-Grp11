@@ -1,0 +1,238 @@
+{% extends "base.html" %}
+
+{% block title %}Accueil - Crypto Monitor{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- En-tête avec profil -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h4 class="mb-1">
+                                <i class="bi bi-person-circle"></i> 
+                                Bienvenue, {{ profile.get_profile_type_display }}
+                            </h4>
+                            <p class="text-muted mb-0">
+                                <i class="bi bi-tag"></i> Marché : {{ profile.get_market_preference_display }}
+                            </p>
+                        </div>
+                        <div>
+                            <a href="{% url 'search:index' %}" class="btn btn-primary me-2">
+                                <i class="bi bi-search"></i> Rechercher
+                            </a>
+                            <a href="{% url 'watchlist:index' %}" class="btn btn-outline-primary">
+                                <i class="bi bi-star"></i> Ma Watchlist
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Carrousel des paires populaires -->
+    <section class="mb-5">
+        <h3 class="mb-4">
+            <i class="bi bi-fire"></i> Paires les plus populaires
+        </h3>
+        
+        <div id="popularPairsCarousel" class="carousel slide" data-bs-ride="carousel">
+            <div class="carousel-indicators">
+                {% for item in carousel_items %}
+                <button type="button" data-bs-target="#popularPairsCarousel" data-bs-slide-to="{{ forloop.counter0 }}" 
+                        {% if forloop.first %}class="active"{% endif %}></button>
+                {% endfor %}
+            </div>
+            
+            <div class="carousel-inner">
+                {% for item in carousel_items %}
+                <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                    <div class="card">
+                        <div class="card-body p-4">
+                            <div class="row align-items-center">
+                                <div class="col-md-4">
+                                    <h2 class="mb-3">
+                                        <a href="{% url 'pairs:detail' item.symbol %}" class="text-decoration-none text-white">
+                                            {{ item.symbol }}
+                                        </a>
+                                    </h2>
+                                    <h3 class="mb-2">${{ item.price }}</h3>
+                                    <h4 class="{% if item.change|floatformat:2|slice:':1' == '-' %}price-down{% else %}price-up{% endif %}">
+                                        <i class="bi bi-{% if item.change|floatformat:2|slice:':1' == '-' %}arrow-down{% else %}arrow-up{% endif %}-circle"></i>
+                                        {{ item.change }}%
+                                    </h4>
+                                    <div class="mt-3">
+                                        <small class="text-muted">
+                                            <i class="bi bi-graph-up"></i> High: ${{ item.high }}<br>
+                                            <i class="bi bi-graph-down"></i> Low: ${{ item.low }}<br>
+                                            <i class="bi bi-activity"></i> Volume: {{ item.volume }}
+                                        </small>
+                                    </div>
+                                    <button class="btn btn-sm btn-outline-primary mt-3" onclick="addToWatchlist('{{ item.symbol }}')">
+                                        <i class="bi bi-star"></i> Ajouter à la watchlist
+                                    </button>
+                                </div>
+                                <div class="col-md-8">
+                                    <canvas id="chart-{{ forloop.counter }}" height="200"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <button class="carousel-control-prev" type="button" data-bs-target="#popularPairsCarousel" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon"></span>
+            </button>
+            <button class="carousel-control-next" type="button" data-bs-target="#popularPairsCarousel" data-bs-slide="next">
+                <span class="carousel-control-next-icon"></span>
+            </button>
+        </div>
+    </section>
+    
+    <!-- Watchlist personnalisée -->
+    <section>
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h3>
+                <i class="bi bi-star-fill"></i> Ma Watchlist
+            </h3>
+            <a href="{% url 'watchlist:index' %}" class="btn btn-outline-primary">
+                <i class="bi bi-eye"></i> Voir tout
+            </a>
+        </div>
+        
+        {% if watchlist %}
+        <div class="row g-3">
+            {% for item in watchlist %}
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h5 class="mb-0">
+                                <a href="{% url 'pairs:detail' item.symbol %}" class="text-decoration-none text-white">
+                                    {{ item.symbol }}
+                                </a>
+                            </h5>
+                            <button class="btn btn-sm btn-outline-danger" onclick="removeFromWatchlist({{ item.id }})">
+                                <i class="bi bi-x"></i>
+                            </button>
+                        </div>
+                        <h4 class="mb-2">${{ item.price }}</h4>
+                        <p class="mb-2 {% if item.change|floatformat:2|slice:':1' == '-' %}price-down{% else %}price-up{% endif %}">
+                            <i class="bi bi-{% if item.change|floatformat:2|slice:':1' == '-' %}arrow-down{% else %}arrow-up{% endif %}-circle"></i>
+                            {{ item.change }}% (24h)
+                        </p>
+                        <small class="text-muted">
+                            <i class="bi bi-activity"></i> Volume: {{ item.volume }}
+                        </small>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="card">
+            <div class="card-body text-center py-5">
+                <i class="bi bi-star" style="font-size: 4rem; color: #6366f1;"></i>
+                <h4 class="mt-3">Votre watchlist est vide</h4>
+                <p class="text-muted">Ajoutez des paires depuis le carrousel ou la page de recherche</p>
+                <a href="{% url 'search:index' %}" class="btn btn-primary">
+                    <i class="bi bi-search"></i> Explorer les marchés
+                </a>
+            </div>
+        </div>
+        {% endif %}
+    </section>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Créer les graphiques pour chaque paire du carrousel
+{% for item in carousel_items %}
+const ctx{{ forloop.counter }} = document.getElementById('chart-{{ forloop.counter }}');
+if (ctx{{ forloop.counter }}) {
+    new Chart(ctx{{ forloop.counter }}, {
+        type: 'line',
+        data: {
+            labels: Array({{ item.prices|length }}).fill(''),
+            datasets: [{
+                label: '{{ item.symbol }}',
+                data: {{ item.prices }},
+                borderColor: '{{ item.change|floatformat:2|slice:":1" }}' === '-' ? '#ef4444' : '#10b981',
+                backgroundColor: '{{ item.change|floatformat:2|slice:":1" }}' === '-' ? 'rgba(239, 68, 68, 0.1)' : 'rgba(16, 185, 129, 0.1)',
+                borderWidth: 2,
+                fill: true,
+                tension: 0.4,
+                pointRadius: 0,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    mode: 'index',
+                    intersect: false,
+                }
+            },
+            scales: {
+                x: { display: false },
+                y: {
+                    display: true,
+                    grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                    ticks: { color: '#94a3b8' }
+                }
+            }
+        }
+    });
+}
+{% endfor %}
+
+// Fonction pour ajouter à la watchlist
+function addToWatchlist(symbol) {
+    fetch('/watchlist/add/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ symbol: symbol })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('✓ ' + symbol + ' ajouté à votre watchlist !');
+            location.reload();
+        } else {
+            alert('Erreur: ' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
+}
+
+// Fonction pour retirer de la watchlist
+function removeFromWatchlist(id) {
+    if (confirm('Voulez-vous retirer cette paire de votre watchlist ?')) {
+        fetch('/watchlist/remove/' + id + '/', {
+            method: 'POST',
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Erreur: ' + data.error);
+            }
+        });
+    }
+}
+</script>
+{% endblock %}
+
