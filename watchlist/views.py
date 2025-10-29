@@ -5,7 +5,7 @@ from django.views.decorators.http import require_POST
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from accounts.models import UserProfile
-from .models import Watchlist, Portfolio
+from .models import Watchlist, Portfolio, TradingBalance
 from api_services.binance_service import BinanceAPIService
 import json
 
@@ -183,6 +183,182 @@ class RemoveFromPortfolioView(View):
             portfolio_item.delete()
             
             return JsonResponse({'success': True, 'message': 'Retiré du portfolio'})
+        
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+
+
+class BuyTokenView(View):
+    """Acheter un token (paper trading)"""
+    
+    @method_decorator(csrf_exempt)
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
+    
+    def post(self, request):
+        if 'user_profile_id' not in request.session:
+            return JsonResponse({'error': 'Non authentifié'}, status=401)
+        
+        try:
+            data = json.loads(request.body)
+            symbol = data.get('symbol', '').upper()
+            quantity = float(data.get('quantity', 0))
+            price = float(data.get('price', 0))
+            
+            if quantity <= 0 or price <= 0:
+                return JsonResponse({'error': 'Quantité et prix invalides'}, status=400)
+            
+            profile = UserProfile.objects.get(id=request.session['user_profile_id'])
+            
+            # Créer ou récupérer le solde de trading
+            trading_balance, created = TradingBalance.objects.get_or_create(
+                user_profile=profile
+            )
+            
+            # Calculer le coût total
+            total_cost = quantity * price
+            
+            # Vérifier si l'utilisateur a assez de fonds
+            if not trading_balance.can_buy(total_cost):
+                return JsonResponse({
+                    'error': f'Fonds insuffisants. Solde: ${float(trading_balance.balance):.2f}, Requis: ${total_cost:.2f}'
+                }, status=400)
+            
+            # Retirer les fonds
+            trading_balance.remove_funds(total_cost)
+            
+            # Ajouter au portfolio
+            Portfolio.objects.create(
+                user_profile=profile,
+                symbol=symbol,
+                quantity=quantity,
+                purchase_price=price,
+                notes=f"Achat fictif - ${total_cost:.2f}"
+            )
+            
+            return JsonResponse({
+                'success': True,
+                'message': f'Acheté {quantity} {symbol} à ${price:.2f}',
+                'new_balance': float(trading_balance.balance),
+                'total_cost': total_cost
+            })
+        
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+
+
+class SellTokenView(View):
+    """Vendre un token (paper trading)"""
+    
+    @method_decorator(csrf_exempt)
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
+    
+    def post(self, request):
+        if 'user_profile_id' not in request.session:
+            return JsonResponse({'error': 'Non authentifié'}, status=401)
+        
+        try:
+            data = json.loads(request.body)
+            symbol = data.get('symbol', '').upper()
+            quantity = float(data.get('quantity', 0))
+            price = float(data.get('price', 0))
+            
+            if quantity <= 0 or price <= 0:
+                return JsonResponse({'error': 'Quantité et prix invalides'}, status=400)
+            
+            profile = UserProfile.objects.get(id=request.session['user_profile_id'])
+            
+            # Récupérer toutes les positions pour ce symbole
+            portfolio_items = Portfolio.objects.filter(
+                user_profile=profile,
+                symbol=symbol
+            ).order_by('purchase_date')
+            
+            # Calculer la quantité totale détenue
+            total_held = sum(float(item.quantity) for item in portfolio_items)
+            
+            if total_held < quantity:
+                return JsonResponse({
+                    'error': f'Quantité insuffisante. Vous possédez {total_held} {symbol}'
+                }, status=400)
+            
+            # Créer ou récupérer le solde de trading
+            trading_balance, created = TradingBalance.objects.get_or_create(
+                user_profile=profile
+            )
+            
+            # Calculer le montant de la vente
+            total_revenue = quantity * price
+            
+            # Ajouter les fonds
+            trading_balance.add_funds(total_revenue)
+            
+            # Réduire les positions (FIFO - First In First Out)
+            remaining_to_sell = quantity
+            for item in portfolio_items:
+                if remaining_to_sell <= 0:
+                    break
+                
+                item_qty = float(item.quantity)
+                if item_qty <= remaining_to_sell:
+                    # Vendre toute la position
+                    remaining_to_sell -= item_qty
+                    item.delete()
+                else:
+                    # Vendre partiellement
+                    item.quantity = item_qty - remaining_to_sell
+                    item.save()
+                    remaining_to_sell = 0
+            
+            return JsonResponse({
+                'success': True,
+                'message': f'Vendu {quantity} {symbol} à ${price:.2f}',
+                'new_balance': float(trading_balance.balance),
+                'total_revenue': total_revenue
+            })
+        
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+
+
+class GetTradingBalanceView(View):
+    """Récupérer le solde de trading"""
+    
+    def get(self, request):
+        if 'user_profile_id' not in request.session:
+            return JsonResponse({'error': 'Non authentifié'}, status=401)
+        
+        try:
+            profile = UserProfile.objects.get(id=request.session['user_profile_id'])
+            trading_balance, created = TradingBalance.objects.get_or_create(
+                user_profile=profile
+            )
+            
+            # Calculer la valeur totale du portfolio
+            portfolio_items = Portfolio.objects.filter(user_profile=profile)
+            portfolio_value = 0
+            
+            for item in portfolio_items:
+                ticker = BinanceAPIService.get_24hr_ticker(item.symbol)
+                if ticker:
+                    current_price = float(ticker.get('lastPrice', '0'))
+                    portfolio_value += item.current_value(current_price)
+            
+            # Calculer la quantité pour chaque symbole
+            symbol_quantities = {}
+            for item in portfolio_items:
+                if item.symbol not in symbol_quantities:
+                    symbol_quantities[item.symbol] = 0
+                symbol_quantities[item.symbol] += float(item.quantity)
+            
+            return JsonResponse({
+                'success': True,
+                'balance': float(trading_balance.balance),
+                'portfolio_value': portfolio_value,
+                'total_value': float(trading_balance.balance) + portfolio_value,
+                'holdings': symbol_quantities
+            })
         
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=500)

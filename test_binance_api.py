@@ -20,11 +20,11 @@ print("📡 Test 1: Connexion à l'API Binance...")
 try:
     response = requests.get(f"{BASE_URL}/api/v3/ping", timeout=5)
     if response.status_code == 200:
-        print("✅ SUCCÈS: Connexion établie avec l'API Binance")
+        print("[OK] SUCCÈS: Connexion établie avec l'API Binance")
     else:
-        print(f"❌ ERREUR: Code de statut {response.status_code}")
+        print(f"[ERREUR] ERREUR: Code de statut {response.status_code}")
 except Exception as e:
-    print(f"❌ ERREUR: {e}")
+    print(f"[ERREUR] ERREUR: {e}")
 
 print()
 
@@ -35,32 +35,32 @@ try:
     if response.status_code == 200:
         data = response.json()
         server_time = datetime.fromtimestamp(data['serverTime'] / 1000)
-        print(f"✅ SUCCÈS: Heure du serveur: {server_time}")
+        print(f"[OK] SUCCÈS: Heure du serveur: {server_time}")
     else:
-        print(f"❌ ERREUR: Code de statut {response.status_code}")
+        print(f"[ERREUR] ERREUR: Code de statut {response.status_code}")
 except Exception as e:
-    print(f"❌ ERREUR: {e}")
+    print(f"[ERREUR] ERREUR: {e}")
 
 print()
 
 # Test 3: Prix actuel du Bitcoin
-print("💰 Test 3: Récupération du prix du Bitcoin (BTC/USDT)...")
+print("[TEST] Test 3: Récupération du prix du Bitcoin (BTC/USDT)...")
 try:
     response = requests.get(f"{BASE_URL}/api/v3/ticker/price", 
                           params={'symbol': 'BTCUSDT'}, 
                           timeout=5)
     if response.status_code == 200:
         data = response.json()
-        print(f"✅ SUCCÈS: BTC/USDT = ${float(data['price']):,.2f}")
+        print(f"[OK] SUCCÈS: BTC/USDT = ${float(data['price']):,.2f}")
     else:
-        print(f"❌ ERREUR: Code de statut {response.status_code}")
+        print(f"[ERREUR] ERREUR: Code de statut {response.status_code}")
 except Exception as e:
-    print(f"❌ ERREUR: {e}")
+    print(f"[ERREUR] ERREUR: {e}")
 
 print()
 
 # Test 4: Statistiques 24h pour plusieurs paires
-print("📊 Test 4: Statistiques 24h des principales paires...")
+print("[STATS] Test 4: Statistiques 24h des principales paires...")
 symbols = ['BTCUSDT', 'ETHUSDT', 'BNBUSDT']
 try:
     for symbol in symbols:
@@ -79,14 +79,14 @@ try:
             print(f"{color} {symbol:10} | Prix: ${price:>12,.2f} | "
                   f"Variation: {change:>+7.2f}% | Volume: {volume:>15,.0f}")
         else:
-            print(f"❌ {symbol}: Erreur {response.status_code}")
+            print(f"[ERREUR] {symbol}: Erreur {response.status_code}")
 except Exception as e:
-    print(f"❌ ERREUR: {e}")
+    print(f"[ERREUR] ERREUR: {e}")
 
 print()
 
 # Test 5: Klines (données de graphique)
-print("📈 Test 5: Récupération des données de graphique (Klines)...")
+print("[CHART] Test 5: Récupération des données de graphique (Klines)...")
 try:
     response = requests.get(f"{BASE_URL}/api/v3/klines", 
                           params={
@@ -97,7 +97,7 @@ try:
                           timeout=5)
     if response.status_code == 200:
         klines = response.json()
-        print(f"✅ SUCCÈS: {len(klines)} bougies horaires récupérées")
+        print(f"[OK] SUCCÈS: {len(klines)} bougies horaires récupérées")
         print("\n   Dernières 5 heures du BTC/USDT:")
         print("   " + "-" * 70)
         print(f"   {'Heure':<20} | {'Open':<12} | {'High':<12} | {'Low':<12} | {'Close':<12}")
@@ -114,9 +114,9 @@ try:
                   f"${open_price:<11,.2f} | ${high_price:<11,.2f} | "
                   f"${low_price:<11,.2f} | ${close_price:<11,.2f}")
     else:
-        print(f"❌ ERREUR: Code de statut {response.status_code}")
+        print(f"[ERREUR] ERREUR: Code de statut {response.status_code}")
 except Exception as e:
-    print(f"❌ ERREUR: {e}")
+    print(f"[ERREUR] ERREUR: {e}")
 
 print()
 
@@ -131,7 +131,7 @@ try:
                           timeout=5)
     if response.status_code == 200:
         data = response.json()
-        print(f"✅ SUCCÈS: Carnet d'ordres récupéré")
+        print(f"[OK] SUCCÈS: Carnet d'ordres récupéré")
         print(f"\n   Top 5 des ordres d'achat (bids):")
         for bid in data['bids'][:5]:
             print(f"   Prix: ${float(bid[0]):>12,.2f} | Quantité: {float(bid[1]):>10.5f} BTC")
@@ -140,9 +140,9 @@ try:
         for ask in data['asks'][:5]:
             print(f"   Prix: ${float(ask[0]):>12,.2f} | Quantité: {float(ask[1]):>10.5f} BTC")
     else:
-        print(f"❌ ERREUR: Code de statut {response.status_code}")
+        print(f"[ERREUR] ERREUR: Code de statut {response.status_code}")
 except Exception as e:
-    print(f"❌ ERREUR: {e}")
+    print(f"[ERREUR] ERREUR: {e}")
 
 print()
 
@@ -158,14 +158,14 @@ try:
         usdt_pairs = sum(1 for s in data['symbols'] if s['symbol'].endswith('USDT'))
         btc_pairs = sum(1 for s in data['symbols'] if s['symbol'].endswith('BTC'))
         
-        print(f"✅ SUCCÈS: {total_symbols} paires de trading disponibles")
+        print(f"[OK] SUCCÈS: {total_symbols} paires de trading disponibles")
         print(f"   - Paires USDT: {usdt_pairs}")
         print(f"   - Paires BTC: {btc_pairs}")
         print(f"   - Autres: {total_symbols - usdt_pairs - btc_pairs}")
     else:
-        print(f"❌ ERREUR: Code de statut {response.status_code}")
+        print(f"[ERREUR] ERREUR: Code de statut {response.status_code}")
 except Exception as e:
-    print(f"❌ ERREUR: {e}")
+    print(f"[ERREUR] ERREUR: {e}")
 
 print()
 print("=" * 80)
@@ -173,10 +173,10 @@ print("TESTS TERMINÉS")
 print("=" * 80)
 print()
 print("📝 Conclusion:")
-print("   Si tous les tests affichent ✅, l'API Binance fonctionne correctement")
+print("   Si tous les tests affichent [OK], l'API Binance fonctionne correctement")
 print("   et votre projet Django pourra récupérer les données sans problème.")
 print()
-print("🚀 Vous pouvez maintenant lancer votre application Django avec:")
+print("[INFO] Vous pouvez maintenant lancer votre application Django avec:")
 print("   python manage.py runserver")
 print()
 

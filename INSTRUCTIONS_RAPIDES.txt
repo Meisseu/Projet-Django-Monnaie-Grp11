@@ -1,17 +1,17 @@
-═══════════════════════════════════════════════════════════════
+===============================================================
   CRYPTO MONITOR - Instructions de lancement
-═══════════════════════════════════════════════════════════════
+===============================================================
 
-📌 MÉTHODE 1 : Fichier Batch (RECOMMANDÉ)
-─────────────────────────────────────────────────────────────
+*** MÉTHODE 1 : Fichier Batch (RECOMMANDÉ)
+-----------------------------------------------------------
 
 1. Double-cliquez sur le fichier : LANCER_APPLICATION.bat
 2. Le serveur démarre automatiquement
 3. Ouvrez votre navigateur à : http://localhost:8000
 
 
-📌 MÉTHODE 2 : Ligne de commande
-─────────────────────────────────────────────────────────────
+*** MÉTHODE 2 : Ligne de commande
+-----------------------------------------------------------
 
 1. Ouvrez un terminal (PowerShell ou CMD)
 
@@ -24,27 +24,27 @@
 4. Ouvrez votre navigateur à : http://localhost:8000
 
 
-📌 EN CAS DE PROBLÈME
-─────────────────────────────────────────────────────────────
+*** EN CAS DE PROBLÈME
+-----------------------------------------------------------
 
-❌ Erreur "No module named 'django'" ?
+[ERREUR] Erreur "No module named 'django'" ?
    → Installez les dépendances : pip install -r requirements.txt
 
-❌ Erreur "Port already in use" ?
+[ERREUR] Erreur "Port already in use" ?
    → Le port 8000 est occupé, utilisez : python manage.py runserver 8080
    → Puis allez sur : http://localhost:8080
 
-❌ Page blanche ou erreur 404 ?
+[ERREUR] Page blanche ou erreur 404 ?
    → Assurez-vous d'aller sur http://localhost:8000 (page d'accueil)
    → Ou http://localhost:8000/ (avec le slash final)
 
-❌ Erreurs de migration ?
+[ERREUR] Erreurs de migration ?
    → python manage.py makemigrations
    → python manage.py migrate
 
 
-📌 NAVIGATION DANS L'APPLICATION
-─────────────────────────────────────────────────────────────
+*** NAVIGATION DANS L'APPLICATION
+-----------------------------------------------------------
 
 / ou /landing                → Page d'atterrissage (sélection profil)
 /home/                       → Page d'accueil avec carrousel
@@ -55,8 +55,8 @@
 /admin/                      → Interface admin Django
 
 
-📌 FONCTIONNALITÉS
-─────────────────────────────────────────────────────────────
+*** FONCTIONNALITÉS
+-----------------------------------------------------------
 
 ✓ Prix en temps réel via API Binance
 ✓ 3,366+ paires de trading disponibles
@@ -68,14 +68,14 @@
 ✓ Design moderne et responsive
 
 
-📌 ARRÊTER LE SERVEUR
-─────────────────────────────────────────────────────────────
+*** ARRÊTER LE SERVEUR
+-----------------------------------------------------------
 
 Dans le terminal où le serveur tourne :
    → Appuyez sur Ctrl + C
 
 
-═══════════════════════════════════════════════════════════════
-  Bon trading ! 📈💰
-═══════════════════════════════════════════════════════════════
+===============================================================
+  Bon trading !
+===============================================================
 

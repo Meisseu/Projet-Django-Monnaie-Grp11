@@ -211,7 +211,7 @@ function addToWatchlist(symbol) {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            alert('✓ ' + symbol + ' ajouté à votre watchlist !');
+            alert('[OK] ' + symbol + ' ajoute a votre watchlist !');
             location.reload();
         } else {
             alert('Erreur: ' + data.error);

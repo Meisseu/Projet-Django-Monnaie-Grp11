@@ -162,4 +162,41 @@ class BinanceAPIService:
                 return f"{vol:.2f}"
         except (ValueError, TypeError):
             return "0"
+    
+    @staticmethod
+    def format_price(price: str) -> str:
+        """Formate un prix crypto avec le bon nombre de décimales"""
+        try:
+            p = float(price)
+            
+            if p == 0:
+                return "0.00"
+            
+            # Grands prix (>= 1000)
+            if p >= 1000:
+                return f"{p:,.2f}"
+            
+            # Prix normaux (>= 1)
+            elif p >= 1:
+                return f"{p:.2f}"
+            
+            # Petits prix - on garde 4 chiffres significatifs
+            else:
+                # Compter les zéros après la virgule
+                price_str = f"{p:.20f}".rstrip('0')
+                decimal_part = price_str.split('.')[1] if '.' in price_str else ''
+                
+                leading_zeros = 0
+                for char in decimal_part:
+                    if char == '0':
+                        leading_zeros += 1
+                    else:
+                        break
+                
+                # 4 chiffres significatifs après le premier chiffre non-zéro
+                decimals_needed = min(leading_zeros + 4, 12)
+                return f"{p:.{decimals_needed}f}"
+                
+        except (ValueError, TypeError):
+            return str(price)
 

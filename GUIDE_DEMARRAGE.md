@@ -6,7 +6,7 @@
 - pip (gestionnaire de paquets Python)
 - Connexion Internet (pour l'API Binance)
 
-## 🚀 Installation
+## Installation
 
 ### 1. Installer les dépendances
 
@@ -42,20 +42,24 @@ Le serveur démarrera sur `http://localhost:8000`
 ## 📱 Utilisation
 
 1. **Page d'atterrissage** (`http://localhost:8000/`)
+
    - Sélectionnez votre profil (débutant, trader confirmé, analyste)
    - Choisissez votre marché préféré (crypto, FIAT, commodities)
 
 2. **Page d'accueil** (`http://localhost:8000/home/`)
+
    - Consultez le carrousel des paires populaires
    - Visualisez votre watchlist personnalisée
    - Ajoutez des paires à votre watchlist
 
 3. **Page de recherche** (`http://localhost:8000/search/`)
+
    - Recherchez des paires par nom
    - Filtrez par type, prix, volume, variation
    - Changez le mode d'affichage (cartes/tableau)
 
 4. **Page détaillée d'une paire** (`http://localhost:8000/pairs/BTCUSDT/`)
+
    - Prix en temps réel et variations
    - Graphiques interactifs (1h, 1j, 1s)
    - Carnet d'ordres et transactions récentes
@@ -63,6 +67,7 @@ Le serveur démarrera sur `http://localhost:8000`
    - Paires similaires
 
 5. **Watchlist & Portfolio** (`http://localhost:8000/watchlist/`)
+
    - Gérez votre watchlist
    - Simulez votre portefeuille d'investissement
    - Suivez vos gains/pertes en temps réel
@@ -70,24 +75,24 @@ Le serveur démarrera sur `http://localhost:8000`
 6. **Déconnexion** (`http://localhost:8000/accounts/logout/`)
    - Efface votre session et retourne à la landing page
 
-## 🎨 Fonctionnalités
+## Fonctionnalites
 
-### ✅ Implémentées
+### Implementees
 
-- ✓ Sélection de profil utilisateur
-- ✓ Gestion de session (sans authentification classique)
-- ✓ Carrousel des paires populaires avec mini-graphiques
-- ✓ Watchlist personnalisée persistante
-- ✓ Portfolio de simulation avec calcul P&L
-- ✓ Recherche avancée avec filtres multiples
-- ✓ Pages détaillées avec graphiques Chart.js
-- ✓ Carnet d'ordres et historique des transactions
-- ✓ Design moderne et responsive (Bootstrap 5)
-- ✓ Intégration complète API Binance
-- ✓ Statistiques ATH/ATL sur 52 semaines
-- ✓ Paires similaires et corrélées
+- [OK] Selection de profil utilisateur
+- [OK] Gestion de session (sans authentification classique)
+- [OK] Carrousel des paires populaires avec mini-graphiques
+- [OK] Watchlist personnalisee persistante
+- [OK] Portfolio de simulation avec calcul P&L
+- [OK] Recherche avancee avec filtres multiples
+- [OK] Pages detaillees avec graphiques Chart.js
+- [OK] Carnet d'ordres et historique des transactions
+- [OK] Design moderne et responsive (Bootstrap 5)
+- [OK] Integration complete API Binance
+- [OK] Statistiques ATH/ATL sur 52 semaines
+- [OK] Paires similaires et correlees
 
-### 🎁 Bonus possibles
+### Bonus possibles
 
 - Alertes de prix par email/notification
 - Widgets TradingView intégrés
@@ -98,7 +103,7 @@ Le serveur démarrera sur `http://localhost:8000`
 - Export CSV/PDF des données
 - Historique des performances du portfolio
 
-## 🔧 Structure du Projet
+## Structure du Projet
 
 ```
 Projet groupe Django monnaie/
@@ -120,6 +125,7 @@ Projet groupe Django monnaie/
 ## 🌐 API Binance
 
 L'application utilise l'API publique Binance Spot :
+
 - https://api.binance.com/api/v3/ticker/24hr
 - https://api.binance.com/api/v3/exchangeInfo
 - https://api.binance.com/api/v3/klines
@@ -129,7 +135,7 @@ L'application utilise l'API publique Binance Spot :
 
 Documentation complète : https://binance-docs.github.io/apidocs/spot/en/
 
-## 📝 Notes
+## Notes
 
 - Aucune clé API n'est nécessaire (endpoints publics uniquement)
 - Les données sont en temps réel via l'API Binance
@@ -140,22 +146,26 @@ Documentation complète : https://binance-docs.github.io/apidocs/spot/en/
 ## 🐛 Résolution de problèmes
 
 ### Erreur "Module not found"
+
 ```bash
 pip install -r requirements.txt
 ```
 
 ### Erreur de migration
+
 ```bash
 python manage.py makemigrations
 python manage.py migrate --run-syncdb
 ```
 
 ### Port 8000 déjà utilisé
+
 ```bash
 python manage.py runserver 8080
 ```
 
 ### Erreurs d'API Binance
+
 Vérifiez votre connexion Internet. L'API Binance peut avoir des limites de taux (rate limits).
 
 ## 🎓 Technologies Utilisées
@@ -172,5 +182,4 @@ Pour toute question ou problème, consultez la documentation Django : https://do
 
 ---
 
-**Bon trading ! 📈💰**
-
+**Bon trading !**

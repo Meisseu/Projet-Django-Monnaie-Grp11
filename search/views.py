@@ -70,18 +70,19 @@ class SearchView(View):
                 
                 results.append({
                     'symbol': symbol,
-                    'price': ticker.get('lastPrice', '0'),
+                    'price': BinanceAPIService.format_price(ticker.get('lastPrice', '0')),
                     'change': ticker.get('priceChangePercent', '0'),
                     'volume': BinanceAPIService.format_volume(ticker.get('volume', '0')),
-                    'high': ticker.get('highPrice', '0'),
-                    'low': ticker.get('lowPrice', '0'),
+                    'volume_raw': volume,  # Pour le tri
+                    'high': BinanceAPIService.format_price(ticker.get('highPrice', '0')),
+                    'low': BinanceAPIService.format_price(ticker.get('lowPrice', '0')),
                     'quote_volume': BinanceAPIService.format_volume(ticker.get('quoteVolume', '0')),
                 })
             except (ValueError, TypeError):
                 continue
         
-        # Trier par volume décroissant
-        results.sort(key=lambda x: float(x['volume'].replace('B', '000000000').replace('M', '000000').replace('K', '000')), reverse=True)
+        # Trier par volume décroissant en utilisant le volume brut
+        results.sort(key=lambda x: x.get('volume_raw', 0), reverse=True)
         
         # Limiter les résultats
         results = results[:100]

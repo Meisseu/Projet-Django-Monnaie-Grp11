@@ -1,7 +1,10 @@
 from django.shortcuts import render, redirect
 from django.views import View
+from django.http import JsonResponse
 from accounts.models import UserProfile
 from api_services.binance_service import BinanceAPIService
+from watchlist.models import TradingBalance, Portfolio
+from datetime import datetime
 
 
 class PairDetailView(View):
@@ -82,11 +85,28 @@ class PairDetailView(View):
                 if len(similar_pairs) >= 5:
                     break
         
+        # Récupérer les informations de trading
+        trading_balance, created = TradingBalance.objects.get_or_create(
+            user_profile=profile
+        )
+        
+        # Calculer la quantité totale détenue pour ce symbole
+        portfolio_items = Portfolio.objects.filter(
+            user_profile=profile,
+            symbol=symbol.upper()
+        )
+        total_quantity = sum(float(item.quantity) for item in portfolio_items)
+        avg_purchase_price = 0
+        if portfolio_items.exists():
+            total_cost = sum(float(item.quantity) * float(item.purchase_price) for item in portfolio_items)
+            avg_purchase_price = total_cost / total_quantity if total_quantity > 0 else 0
+        
         context = {
             'profile': profile,
             'symbol': symbol.upper(),
             'ticker': ticker_24h,
             'current_price': current_price,
+            'current_price_formatted': BinanceAPIService.format_price(current_price.get('price', '0')),
             'change_1h': f"{change_1h:+.2f}",
             'change_24h': ticker_24h.get('priceChangePercent', '0'),
             'change_7d': f"{change_7d:+.2f}",
@@ -94,15 +114,68 @@ class PairDetailView(View):
             'quote_volume': BinanceAPIService.format_volume(ticker_24h.get('quoteVolume', '0')),
             'high_24h': ticker_24h.get('highPrice', '0'),
             'low_24h': ticker_24h.get('lowPrice', '0'),
+            'high_24h_formatted': BinanceAPIService.format_price(ticker_24h.get('highPrice', '0')),
+            'low_24h_formatted': BinanceAPIService.format_price(ticker_24h.get('lowPrice', '0')),
             'ath': ath,
             'atl': atl,
+            'ath_formatted': BinanceAPIService.format_price(str(ath)),
+            'atl_formatted': BinanceAPIService.format_price(str(atl)),
             'order_book': order_book,
             'recent_trades': recent_trades[:10],
             'chart_data_1h': chart_data_1h,
             'chart_data_1d': chart_data_1d,
             'chart_data_1w': chart_data_1w,
             'similar_pairs': similar_pairs,
+            # Trading info
+            'trading_balance': float(trading_balance.balance),
+            'held_quantity': total_quantity,
+            'avg_purchase_price': avg_purchase_price,
         }
         
         return render(request, 'pairs/detail.html', context)
+
+
+class PairDataAPIView(View):
+    """API pour récupérer les données en temps réel d'une paire"""
+    
+    def get(self, request, symbol):
+        data_type = request.GET.get('type', 'all')
+        
+        response_data = {}
+        
+        # Carnet d'ordres
+        if data_type in ['all', 'orderbook']:
+            order_book = BinanceAPIService.get_order_book(symbol.upper(), 8)
+            response_data['order_book'] = {
+                'bids': order_book.get('bids', [])[:8],
+                'asks': order_book.get('asks', [])[:8],
+            }
+        
+        # Transactions récentes
+        if data_type in ['all', 'trades']:
+            recent_trades = BinanceAPIService.get_recent_trades(symbol.upper(), 15)
+            trades_formatted = []
+            for trade in recent_trades:
+                trade_time = datetime.fromtimestamp(trade['time'] / 1000)
+                trades_formatted.append({
+                    'price': BinanceAPIService.format_price(trade['price']),
+                    'qty': trade['qty'],
+                    'time': trade_time.strftime('%H:%M:%S'),
+                })
+            response_data['recent_trades'] = trades_formatted
+        
+        # Prix actuel et statistiques
+        if data_type in ['all', 'ticker']:
+            ticker = BinanceAPIService.get_24hr_ticker(symbol.upper())
+            current_price = BinanceAPIService.get_ticker_price(symbol.upper())
+            if ticker and current_price:
+                response_data['ticker'] = {
+                    'price': BinanceAPIService.format_price(current_price.get('price', '0')),
+                    'change_24h': ticker.get('priceChangePercent', '0'),
+                    'high_24h': BinanceAPIService.format_price(ticker.get('highPrice', '0')),
+                    'low_24h': BinanceAPIService.format_price(ticker.get('lowPrice', '0')),
+                    'volume': BinanceAPIService.format_volume(ticker.get('volume', '0')),
+                }
+        
+        return JsonResponse(response_data)
 

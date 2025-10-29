@@ -2,16 +2,269 @@
 
 {% block title %}{{ symbol }} - Crypto Monitor{% endblock %}
 
+{% block extra_css %}
+<style>
+    /* Fond noir pour la page de détails du token */
+    body {
+        background: #000000 !important;
+    }
+    
+    /* Ajuster les cartes pour le mode dark */
+    .card {
+        background: #1a1a1a !important;
+        border: 1px solid #2a2a2a !important;
+    }
+    
+    .card-header {
+        background: #0d0d0d !important;
+        border-bottom: 1px solid #2a2a2a !important;
+    }
+    
+    /* Texte clair pour la lisibilité */
+    body, .card, .card-body, .card-header, h1, h2, h3, h4, h5, h6, p, small {
+        color: #ffffff !important;
+    }
+    
+    .text-muted {
+        color: #888888 !important;
+    }
+    
+    /* Breadcrumb adapté */
+    .breadcrumb {
+        background: #1a1a1a !important;
+        border: 1px solid #2a2a2a !important;
+    }
+    
+    .breadcrumb-item a {
+        color: #6366f1 !important;
+    }
+    
+    .breadcrumb-item.active {
+        color: #ffffff !important;
+    }
+    
+    /* Tables en mode dark */
+    .table {
+        color: #ffffff !important;
+    }
+    
+    .table thead th {
+        border-color: #2a2a2a !important;
+        color: #ffffff !important;
+    }
+    
+    .table td, .table th {
+        border-color: #2a2a2a !important;
+    }
+    
+    /* Boutons et formulaires */
+    .form-control, .form-select {
+        background: #2a2a2a !important;
+        border-color: #3a3a3a !important;
+        color: #ffffff !important;
+    }
+    
+    .modal-content {
+        background: #1a1a1a !important;
+        border: 1px solid #2a2a2a !important;
+    }
+    
+    .modal-header, .modal-footer {
+        border-color: #2a2a2a !important;
+    }
+    
+    /* Bordures des sections */
+    .border {
+        border-color: #2a2a2a !important;
+    }
+    
+    /* Container principal */
+    .container {
+        background: transparent !important;
+    }
+    
+    /* Breadcrumb moderne */
+    .modern-breadcrumb {
+        background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%) !important;
+        border: 1px solid #3a3a3a !important;
+        border-radius: 12px !important;
+        padding: 1rem 1.5rem !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+    
+    .modern-breadcrumb .breadcrumb-item {
+        font-size: 1rem;
+        font-weight: 500;
+    }
+    
+    .modern-breadcrumb .breadcrumb-item + .breadcrumb-item::before {
+        content: "›";
+        color: #6366f1;
+        font-size: 1.3rem;
+        font-weight: bold;
+    }
+    
+    .modern-breadcrumb .breadcrumb-item a {
+        color: #8b92ff !important;
+        transition: all 0.3s ease;
+        text-decoration: none;
+    }
+    
+    .modern-breadcrumb .breadcrumb-item a:hover {
+        color: #6366f1 !important;
+        text-shadow: 0 0 8px rgba(99, 102, 241, 0.5);
+    }
+    
+    .modern-breadcrumb .breadcrumb-item.active {
+        color: #ffffff !important;
+        font-weight: 600;
+    }
+    
+    /* Tables modernes pour le carnet d'ordres - Style épuré comme paires similaires */
+    .order-book-card {
+        background: #2a2a2a !important;
+        border: 1px solid #3a3a3a !important;
+        border-radius: 16px !important;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .order-book-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 16px rgba(99, 102, 241, 0.2);
+    }
+    
+    .order-book-card .card-header {
+        background: #1f1f1f !important;
+        border-bottom: 1px solid #3a3a3a !important;
+        padding: 1.25rem 1.5rem !important;
+    }
+    
+    .order-book-card .card-body {
+        background: #2a2a2a !important;
+    }
+    
+    .order-book-table {
+        margin: 0 !important;
+        background: transparent !important;
+    }
+    
+    .order-book-table thead {
+        background: #000000 !important;
+    }
+    
+    .order-book-table thead th {
+        padding: 0.875rem 1rem !important;
+        font-weight: 600 !important;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 1px;
+        border: none !important;
+        color: #ffffff !important;
+        background: #000000 !important;
+    }
+    
+    .order-book-table tbody td {
+        padding: 0.625rem 1rem !important;
+        border-color: #333333 !important;
+        font-family: 'Courier New', monospace;
+        font-size: 0.875rem;
+        background: #2a2a2a !important;
+    }
+    
+    .order-book-table tbody tr {
+        transition: background-color 0.2s ease;
+        border-bottom: 1px solid #333333 !important;
+    }
+    
+    .order-book-table tbody tr:hover {
+        background-color: #323232 !important;
+    }
+    
+    .order-book-table tbody tr:last-child {
+        border-bottom: none !important;
+    }
+    
+    /* Couleurs vives pour les prix du carnet d'ordres */
+    .order-book-table .price-up {
+        color: #10b981 !important;
+        font-weight: 700 !important;
+    }
+    
+    .order-book-table .price-down {
+        color: #ef4444 !important;
+        font-weight: 700 !important;
+    }
+    
+    /* Prix des transactions - première colonne avec fond noir */
+    .transactions-price {
+        background: #000000 !important;
+        color: #ffffff !important;
+        font-weight: 600 !important;
+    }
+    
+    /* Quantités en blanc pour tous les tableaux */
+    .order-book-table tbody td:not(.price-up):not(.price-down):not(.transactions-price) {
+        color: #ffffff !important;
+    }
+    
+    .order-divider {
+        height: 1px;
+        background: linear-gradient(90deg, transparent, #444444, transparent);
+        margin: 1rem 0;
+    }
+    
+    /* Sections d'en-tête pour Achats/Ventes */
+    .order-section-header {
+        background: #252525 !important;
+        padding: 0.75rem 1rem !important;
+        border-bottom: 1px solid #333333 !important;
+    }
+    
+    .order-section-header .price-up {
+        color: #10b981 !important;
+    }
+    
+    .order-section-header .price-down {
+        color: #ef4444 !important;
+    }
+    
+    /* Style pour les paires similaires (référence) */
+    .similar-pairs-card {
+        background: #2a2a2a !important;
+        border: 1px solid #3a3a3a !important;
+        border-radius: 12px !important;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .similar-pairs-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 16px rgba(99, 102, 241, 0.2);
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="container py-4">
-    <!-- En-tête -->
+    <!-- En-tête moderne -->
     <div class="row mb-4">
         <div class="col-12">
             <nav aria-label="breadcrumb">
-                <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="{% url 'home:index' %}" class="text-decoration-none">Accueil</a></li>
-                    <li class="breadcrumb-item"><a href="{% url 'search:index' %}" class="text-decoration-none">Recherche</a></li>
-                    <li class="breadcrumb-item active">{{ symbol }}</li>
+                <ol class="breadcrumb modern-breadcrumb mb-0">
+                    <li class="breadcrumb-item">
+                        <a href="{% url 'home:index' %}">
+                            <i class="bi bi-house-door"></i> Accueil
+                        </a>
+                    </li>
+                    <li class="breadcrumb-item">
+                        <a href="{% url 'search:index' %}">
+                            <i class="bi bi-search"></i> Recherche
+                        </a>
+                    </li>
+                    <li class="breadcrumb-item active">
+                        <i class="bi bi-currency-exchange"></i> {{ symbol }}
+                    </li>
                 </ol>
             </nav>
         </div>
@@ -25,7 +278,7 @@
                     <div class="d-flex justify-content-between align-items-start mb-4">
                         <div>
                             <h2 class="mb-2">{{ symbol }}</h2>
-                            <h3 class="mb-0">${{ current_price.price }}</h3>
+                            <h3 class="mb-0">${{ current_price_formatted }}</h3>
                         </div>
                         <div class="text-end">
                             <button class="btn btn-primary mb-2" onclick="addToWatchlist('{{ symbol }}')">
@@ -65,28 +318,18 @@
                         </div>
                     </div>
                     
-                    <!-- Graphique principal -->
-                    <div class="btn-group mb-3" role="group">
-                        <input type="radio" class="btn-check" name="chartPeriod" id="chart1h" checked>
-                        <label class="btn btn-outline-primary" for="chart1h" onclick="showChart('1h')">1H</label>
-                        
-                        <input type="radio" class="btn-check" name="chartPeriod" id="chart1d">
-                        <label class="btn btn-outline-primary" for="chart1d" onclick="showChart('1d')">1J</label>
-                        
-                        <input type="radio" class="btn-check" name="chartPeriod" id="chart1w">
-                        <label class="btn btn-outline-primary" for="chart1w" onclick="showChart('1w')">1S</label>
-                    </div>
-                    
-                    <div style="position: relative; height: 400px; max-height: 50vh;">
-                        <canvas id="priceChart"></canvas>
+                    <!-- TradingView Widget -->
+                    <div class="tradingview-widget-container" style="height: 600px; width: 100%;">
+                        <div id="tradingview_chart" style="height: 100%; width: 100%;"></div>
                     </div>
                 </div>
             </div>
         </div>
         
-        <!-- Statistiques -->
+        <!-- Statistiques et Trading -->
         <div class="col-md-4">
-            <div class="card h-100">
+            <!-- Statistiques 24h -->
+            <div class="card mb-4">
                 <div class="card-header">
                     <h5 class="mb-0"><i class="bi bi-bar-chart"></i> Statistiques 24h</h5>
                 </div>
@@ -101,20 +344,79 @@
                     </div>
                     <div class="mb-3">
                         <small class="text-muted">Plus haut (24h)</small>
-                        <h6>${{ high_24h }}</h6>
+                        <h6>${{ high_24h_formatted }}</h6>
                     </div>
                     <div class="mb-3">
                         <small class="text-muted">Plus bas (24h)</small>
-                        <h6>${{ low_24h }}</h6>
+                        <h6>${{ low_24h_formatted }}</h6>
                     </div>
                     <hr>
                     <div class="mb-3">
                         <small class="text-muted">ATH (52 semaines)</small>
-                        <h6 class="price-up">${{ ath }}</h6>
+                        <h6 class="price-up">${{ ath_formatted }}</h6>
                     </div>
                     <div class="mb-0">
                         <small class="text-muted">ATL (52 semaines)</small>
-                        <h6 class="price-down">${{ atl }}</h6>
+                        <h6 class="price-down">${{ atl_formatted }}</h6>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Trading fictif -->
+            <div class="card">
+                <div class="card-header" style="background: linear-gradient(135deg, #6366f1, #8b5cf6) !important; border: none;">
+                    <h5 class="mb-0" style="color: #ffffff;">
+                        <i class="bi bi-cash-coin"></i> Paper Trading
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <!-- Solde actuel -->
+                    <div class="mb-3 p-3" style="background: #1a1a1a; border-radius: 8px;">
+                        <small class="text-muted d-block">Solde disponible</small>
+                        <h4 class="mb-0 text-success" id="tradingBalance">${{ trading_balance|floatformat:2 }}</h4>
+                    </div>
+                    
+                    <!-- Position actuelle -->
+                    {% if held_quantity > 0 %}
+                    <div class="mb-3 p-3" style="background: #1a1a1a; border-radius: 8px;">
+                        <small class="text-muted d-block">Vous possédez</small>
+                        <h5 class="mb-1" id="heldQuantity">{{ held_quantity|floatformat:8 }} {{ symbol }}</h5>
+                        <small class="text-muted">Prix moyen: ${{ avg_purchase_price|floatformat:8 }}</small>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Formulaire d'achat -->
+                    <div class="mb-3">
+                        <label class="form-label fw-bold text-success">
+                            <i class="bi bi-arrow-down-circle"></i> Acheter
+                        </label>
+                        <div class="input-group mb-2">
+                            <input type="number" class="form-control" id="buyQuantity" placeholder="Quantité" step="0.00000001" min="0">
+                        </div>
+                        <div class="d-grid">
+                            <button class="btn btn-success" onclick="buyToken()">
+                                <i class="bi bi-cart-plus"></i> Acheter à $<span id="currentPriceBuy">{{ current_price.price }}</span>
+                            </button>
+                        </div>
+                        <small class="text-muted" id="buyCost">Coût: $0.00</small>
+                    </div>
+                    
+                    <hr>
+                    
+                    <!-- Formulaire de vente -->
+                    <div class="mb-0">
+                        <label class="form-label fw-bold text-danger">
+                            <i class="bi bi-arrow-up-circle"></i> Vendre
+                        </label>
+                        <div class="input-group mb-2">
+                            <input type="number" class="form-control" id="sellQuantity" placeholder="Quantité" step="0.00000001" min="0" max="{{ held_quantity }}" {% if held_quantity == 0 %}disabled{% endif %}>
+                        </div>
+                        <div class="d-grid">
+                            <button class="btn btn-danger" onclick="sellToken()" {% if held_quantity == 0 %}disabled{% endif %}>
+                                <i class="bi bi-cart-dash"></i> Vendre à $<span id="currentPriceSell">{{ current_price.price }}</span>
+                            </button>
+                        </div>
+                        <small class="text-muted" id="sellRevenue">Revenu: $0.00</small>
                     </div>
                 </div>
             </div>
@@ -123,42 +425,64 @@
     
     <!-- Carnet d'ordres et transactions récentes -->
     <div class="row mb-4">
-        <div class="col-md-6">
-            <div class="card">
+        <div class="col-md-6 mb-4 mb-md-0">
+            <div class="card order-book-card">
                 <div class="card-header">
-                    <h5 class="mb-0"><i class="bi bi-book"></i> Carnet d'ordres</h5>
+                    <h5 class="mb-0" style="font-size: 1rem; font-weight: 600;">
+                        <i class="bi bi-book" style="color: #6366f1;"></i> 
+                        <span style="color: #e0e0e0;">Carnet d'ordres</span>
+                    </h5>
                 </div>
                 <div class="card-body p-0">
+                    <!-- Ordres d'achat (Bids) -->
+                    <div class="order-section-header">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-arrow-up-circle-fill price-up me-2" style="font-size: 1.1rem;"></i>
+                            <h6 class="mb-0 price-up" style="font-weight: 600; font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.5px;">Ordres d'achat</h6>
+                        </div>
+                    </div>
                     <div class="table-responsive">
-                        <table class="table table-sm mb-0">
+                        <table class="table order-book-table mb-0">
                             <thead>
                                 <tr>
-                                    <th>Prix (Achat)</th>
-                                    <th>Quantité</th>
+                                    <th><i class="bi bi-currency-dollar"></i> Prix</th>
+                                    <th class="text-end"><i class="bi bi-box"></i> Quantité</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {% for bid in order_book.bids|slice:":10" %}
+                                {% for bid in order_book.bids|slice:":8" %}
                                 <tr>
-                                    <td class="price-up">{{ bid.0 }}</td>
-                                    <td>{{ bid.1 }}</td>
+                                    <td class="price-up fw-bold">{{ bid.0 }}</td>
+                                    <td class="text-end">{{ bid.1 }}</td>
                                 </tr>
                                 {% endfor %}
                             </tbody>
                         </table>
-                        
-                        <table class="table table-sm mb-0 mt-3">
+                    </div>
+                    
+                    <!-- Séparateur -->
+                    <div class="order-divider"></div>
+                    
+                    <!-- Ordres de vente (Asks) -->
+                    <div class="order-section-header">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-arrow-down-circle-fill price-down me-2" style="font-size: 1.1rem;"></i>
+                            <h6 class="mb-0 price-down" style="font-weight: 600; font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.5px;">Ordres de vente</h6>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table order-book-table mb-0">
                             <thead>
                                 <tr>
-                                    <th>Prix (Vente)</th>
-                                    <th>Quantité</th>
+                                    <th><i class="bi bi-currency-dollar"></i> Prix</th>
+                                    <th class="text-end"><i class="bi bi-box"></i> Quantité</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {% for ask in order_book.asks|slice:":10" %}
+                                {% for ask in order_book.asks|slice:":8" %}
                                 <tr>
-                                    <td class="price-down">{{ ask.0 }}</td>
-                                    <td>{{ ask.1 }}</td>
+                                    <td class="price-down fw-bold">{{ ask.0 }}</td>
+                                    <td class="text-end">{{ ask.1 }}</td>
                                 </tr>
                                 {% endfor %}
                             </tbody>
@@ -169,29 +493,32 @@
         </div>
         
         <div class="col-md-6">
-            <div class="card">
+            <div class="card order-book-card">
                 <div class="card-header">
-                    <h5 class="mb-0"><i class="bi bi-clock-history"></i> Transactions récentes</h5>
+                    <h5 class="mb-0" style="font-size: 1rem; font-weight: 600;">
+                        <i class="bi bi-clock-history" style="color: #10b981;"></i> 
+                        <span style="color: #e0e0e0;">Transactions récentes</span>
+                    </h5>
                 </div>
                 <div class="card-body p-0">
                     <div class="table-responsive">
-                        <table class="table table-sm mb-0">
+                        <table class="table order-book-table mb-0">
                             <thead>
                                 <tr>
-                                    <th>Prix</th>
-                                    <th>Quantité</th>
-                                    <th>Heure</th>
+                                    <th><i class="bi bi-currency-dollar"></i> Prix</th>
+                                    <th class="text-end"><i class="bi bi-box"></i> Quantité</th>
+                                    <th class="text-end"><i class="bi bi-clock"></i> Heure</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {% for trade in recent_trades %}
                                 <tr>
-                                    <td>{{ trade.price }}</td>
-                                    <td>{{ trade.qty }}</td>
-                                    <td>
-                                        <small class="text-muted">
+                                    <td class="transactions-price">{{ trade.price }}</td>
+                                    <td class="text-end">{{ trade.qty }}</td>
+                                    <td class="text-end">
+                                        <span class="badge" style="background: rgba(99, 102, 241, 0.2); color: #8b92ff; font-size: 0.8rem;">
                                             {{ trade.time|date:"H:i:s" }}
-                                        </small>
+                                        </span>
                                     </td>
                                 </tr>
                                 {% endfor %}
@@ -256,7 +583,7 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Prix d'achat</label>
-                        <input type="number" class="form-control" id="purchasePrice" step="0.01" 
+                        <input type="number" class="form-control" id="purchasePrice" step="0.00000001" 
                                value="{{ current_price.price }}" required>
                     </div>
                     <div class="mb-3">
@@ -277,82 +604,104 @@
 {% endblock %}
 
 {% block extra_js %}
-<script>
-// Données des graphiques
-const chartData = {
-    '1h': {{ chart_data_1h|safe }},
-    '1d': {{ chart_data_1d|safe }},
-    '1w': {{ chart_data_1w|safe }}
-};
-
-let currentChart = null;
-let currentPeriod = '1h';
-
-// Créer le graphique initial
-showChart('1h');
-
-function showChart(period) {
-    currentPeriod = period;
-    const data = chartData[period];
+<!-- TradingView Widget Script -->
+<script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+<script type="text/javascript">
+// Initialiser le widget TradingView Advanced Chart
+(function() {
+    var symbol = "{{ symbol }}";
     
-    if (currentChart) {
-        currentChart.destroy();
+    // Liste des symboles populaires qui fonctionnent sur TradingView
+    var popularSymbols = ['BTCUSDT', 'ETHUSDT', 'BNBUSDT', 'XRPUSDT', 'ADAUSDT', 
+                         'DOGEUSDT', 'SOLUSDT', 'MATICUSDT', 'DOTUSDT', 'LTCUSDT',
+                         'AVAXUSDT', 'LINKUSDT', 'ATOMUSDT', 'ETCUSDT'];
+    
+    // Déterm le format du symbole pour TradingView
+    var tvSymbol;
+    
+    // Si c'est un symbole populaire, on utilise BINANCE:
+    if (popularSymbols.includes(symbol)) {
+        tvSymbol = "BINANCE:" + symbol;
+    } else {
+        // Pour les autres, on essaie différents formats
+        // Beaucoup de petits tokens ne sont disponibles que comme USDT pairs
+        if (symbol.endsWith('USDT')) {
+            tvSymbol = "BINANCE:" + symbol;
+        } else if (symbol.endsWith('BUSD')) {
+            // BUSD n'est plus supporté, essayer USDT à la place
+            var baseAsset = symbol.replace('BUSD', '');
+            tvSymbol = "BINANCE:" + baseAsset + "USDT";
+        } else if (symbol.endsWith('BTC')) {
+            tvSymbol = "BINANCE:" + symbol;
+        } else {
+            // Par défaut, essayer avec BINANCE
+            tvSymbol = "BINANCE:" + symbol;
+        }
     }
     
-    const ctx = document.getElementById('priceChart');
-    currentChart = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: data.labels,
-            datasets: [{
-                label: '{{ symbol }}',
-                data: data.prices,
-                borderColor: '#6366f1',
-                backgroundColor: 'rgba(99, 102, 241, 0.1)',
-                borderWidth: 2,
-                fill: true,
-                tension: 0.4,
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: { display: false },
-                tooltip: {
-                    mode: 'index',
-                    intersect: false,
-                    callbacks: {
-                        label: function(context) {
-                            return '$ ' + context.parsed.y.toFixed(2);
-                        }
-                    }
-                }
-            },
-            scales: {
-                x: {
-                    display: true,
-                    grid: { color: 'rgba(255, 255, 255, 0.1)' },
-                    ticks: { 
-                        color: '#94a3b8',
-                        maxTicksLimit: 8
-                    }
-                },
-                y: {
-                    display: true,
-                    grid: { color: 'rgba(255, 255, 255, 0.1)' },
-                    ticks: {
-                        color: '#94a3b8',
-                        maxTicksLimit: 8,
-                        callback: function(value) {
-                            return '$ ' + value.toFixed(2);
-                        }
-                    }
-                }
-            }
-        }
-    });
-}
+    try {
+        new TradingView.widget({
+            "width": "100%",
+            "height": 600,
+            "symbol": tvSymbol,
+            "interval": "D",
+            "timezone": "Europe/Paris",
+            "theme": "dark",
+            "style": "1",  // 1 = Bougies japonaises (par défaut)
+            "locale": "fr",
+            "toolbar_bg": "#1e293b",
+            "enable_publishing": false,
+            "withdateranges": true,
+            "hide_side_toolbar": false,
+            "allow_symbol_change": true,
+            "save_image": true,
+            "container_id": "tradingview_chart",
+            
+            // Paramètres pour améliorer la compatibilité
+            "autosize": true,
+            "hide_top_toolbar": false,
+            "hide_legend": false,
+            "save_image": true,
+            "show_popup_button": true,
+            
+            // Études (Indicateurs) par défaut
+            "studies": [
+                // Vous pouvez décommenter pour ajouter des indicateurs par défaut
+                // "MASimple@tv-basicstudies",           // Moving Average Simple
+                // "BB@tv-basicstudies",                  // Bollinger Bands
+                // "RSI@tv-basicstudies",                 // RSI
+                // "MACD@tv-basicstudies",                // MACD
+            ],
+            
+            // Paramètres avancés
+            "details": true,
+            "hotlist": true,
+            "calendar": false,
+            "popup_width": "1000",
+            "popup_height": "650",
+            
+            // Callback pour gérer les erreurs
+            "disabled_features": [],
+            "enabled_features": ["study_templates"],
+            
+            // Fonctionnalités activées
+            "support_host": "https://www.tradingview.com"
+        });
+        
+            console.log("[CHART] Graphique TradingView charge pour:", tvSymbol);
+            console.log("[INFO] Astuce: Vous pouvez cliquer sur 'Changer le symbole' en haut si ce token n'existe pas sur TradingView");
+        } catch (error) {
+            console.error("[ERREUR] Erreur lors du chargement du graphique TradingView:", error);
+        document.getElementById('tradingview_chart').innerHTML = 
+            '<div class="alert alert-warning m-3">' +
+            '<i class="bi bi-exclamation-triangle"></i> ' +
+            '<strong>Graphique temporairement indisponible</strong><br>' +
+            'Le symbole <code>' + symbol + '</code> n\'existe pas sur TradingView.<br><br>' +
+            '<small><strong>Suggestion:</strong> TradingView ne supporte que les paires principales de Binance. ' +
+            'Les données de prix actuelles proviennent directement de Binance et sont affichées ci-dessus.</small>' +
+            '</div>';
+    }
+})();
 
 function addToWatchlist(symbol) {
     fetch('/watchlist/add/', {
@@ -363,7 +712,7 @@ function addToWatchlist(symbol) {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            alert('✓ ' + symbol + ' ajouté à votre watchlist !');
+            alert('[OK] ' + symbol + ' ajoute a votre watchlist !');
         } else {
             alert('Erreur: ' + data.error);
         }
@@ -388,7 +737,7 @@ function addToPortfolio() {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            alert('✓ Ajouté au portfolio !');
+            alert('[OK] Ajoute au portfolio !');
             bootstrap.Modal.getInstance(document.getElementById('addPortfolioModal')).hide();
             document.getElementById('portfolioForm').reset();
         } else {
@@ -396,6 +745,285 @@ function addToPortfolio() {
         }
     });
 }
+
+// ========================================
+// MISE À JOUR EN TEMPS RÉEL
+// ========================================
+
+let updateInterval;
+const SYMBOL = '{{ symbol }}';
+
+// Fonction pour mettre à jour le carnet d'ordres
+function updateOrderBook(data) {
+    if (!data.order_book) return;
+    
+    // Mettre à jour les ordres d'achat (bids)
+    const bidsBody = document.querySelector('.order-book-table tbody');
+    if (bidsBody && data.order_book.bids) {
+        let bidsHTML = '';
+        data.order_book.bids.forEach(bid => {
+            bidsHTML += `
+                <tr>
+                    <td class="price-up fw-bold">${bid[0]}</td>
+                    <td class="text-end">${bid[1]}</td>
+                </tr>
+            `;
+        });
+        const bidsTable = document.querySelectorAll('.order-book-table tbody')[0];
+        if (bidsTable) bidsTable.innerHTML = bidsHTML;
+    }
+    
+    // Mettre à jour les ordres de vente (asks)
+    if (data.order_book.asks) {
+        let asksHTML = '';
+        data.order_book.asks.forEach(ask => {
+            asksHTML += `
+                <tr>
+                    <td class="price-down fw-bold">${ask[0]}</td>
+                    <td class="text-end">${ask[1]}</td>
+                </tr>
+            `;
+        });
+        const asksTable = document.querySelectorAll('.order-book-table tbody')[1];
+        if (asksTable) asksTable.innerHTML = asksHTML;
+    }
+}
+
+// Fonction pour mettre à jour les transactions récentes
+function updateRecentTrades(data) {
+    if (!data.recent_trades) return;
+    
+    const tradesTable = document.querySelectorAll('.order-book-table tbody')[2];
+    if (!tradesTable) return;
+    
+    let tradesHTML = '';
+    data.recent_trades.forEach(trade => {
+        tradesHTML += `
+            <tr>
+                <td class="transactions-price">${trade.price}</td>
+                <td class="text-end">${trade.qty}</td>
+                <td class="text-end">
+                    <span class="badge" style="background: rgba(99, 102, 241, 0.2); color: #8b92ff; font-size: 0.8rem;">
+                        ${trade.time}
+                    </span>
+                </td>
+            </tr>
+        `;
+    });
+    tradesTable.innerHTML = tradesHTML;
+}
+
+// Fonction pour mettre à jour le prix et les statistiques
+function updateTicker(data) {
+    if (!data.ticker) return;
+    
+    // Mettre à jour le prix principal
+    const priceElement = document.querySelector('h3.mb-0');
+    if (priceElement && data.ticker.price) {
+        priceElement.textContent = '$' + data.ticker.price;
+    }
+    
+    // Mettre à jour les statistiques (optionnel pour plus tard)
+}
+
+// Fonction principale pour récupérer les données
+async function fetchLiveData() {
+    try {
+        const response = await fetch(`/pairs/api/${SYMBOL}/`);
+        if (!response.ok) throw new Error('Network error');
+        
+        const data = await response.json();
+        
+        // Mettre à jour chaque section
+        updateOrderBook(data);
+        updateRecentTrades(data);
+        updateTicker(data);
+        
+        console.log('[DATA] Donnees mises a jour:', new Date().toLocaleTimeString());
+    } catch (error) {
+        console.error('[ERREUR] Erreur lors de la mise a jour:', error);
+    }
+}
+
+// Démarrer les mises à jour automatiques toutes les 3 secondes
+function startLiveUpdates() {
+    // Première mise à jour immédiate
+    fetchLiveData();
+    
+    // Puis toutes les 3 secondes
+    updateInterval = setInterval(fetchLiveData, 3000);
+    
+    console.log('[OK] Mises a jour en temps reel activees (toutes les 3s)');
+}
+
+// Arrêter les mises à jour (utile si on quitte la page)
+function stopLiveUpdates() {
+    if (updateInterval) {
+        clearInterval(updateInterval);
+        console.log('[STOP] Mises a jour en temps reel arretees');
+    }
+}
+
+// Démarrer au chargement de la page
+document.addEventListener('DOMContentLoaded', function() {
+    startLiveUpdates();
+});
+
+// Arrêter quand on quitte la page
+window.addEventListener('beforeunload', function() {
+    stopLiveUpdates();
+});
+
+// ========================================
+// PAPER TRADING FUNCTIONS
+// ========================================
+
+// Calculer et afficher le coût d'achat en temps réel
+document.getElementById('buyQuantity')?.addEventListener('input', function() {
+    const quantity = parseFloat(this.value) || 0;
+    const price = parseFloat(document.getElementById('currentPriceBuy').textContent) || 0;
+    const cost = quantity * price;
+    document.getElementById('buyCost').textContent = `Coût: $${cost.toFixed(2)}`;
+});
+
+// Calculer et afficher le revenu de vente en temps réel
+document.getElementById('sellQuantity')?.addEventListener('input', function() {
+    const quantity = parseFloat(this.value) || 0;
+    const price = parseFloat(document.getElementById('currentPriceSell').textContent) || 0;
+    const revenue = quantity * price;
+    document.getElementById('sellRevenue').textContent = `Revenu: $${revenue.toFixed(2)}`;
+});
+
+// Fonction pour acheter un token
+async function buyToken() {
+    const quantity = parseFloat(document.getElementById('buyQuantity').value);
+    const price = parseFloat(document.getElementById('currentPriceBuy').textContent);
+    
+    if (!quantity || quantity <= 0) {
+        alert('[ATTENTION] Veuillez entrer une quantite valide');
+        return;
+    }
+    
+    const totalCost = quantity * price;
+    const currentBalance = parseFloat(document.getElementById('tradingBalance').textContent.replace('$', '').replace(',', ''));
+    
+    if (totalCost > currentBalance) {
+        alert(`[ERREUR] Fonds insuffisants!\nSolde: $${currentBalance.toFixed(2)}\nRequis: $${totalCost.toFixed(2)}`);
+        return;
+    }
+    
+    if (!confirm(`Confirmer l'achat de ${quantity} {{ symbol }} à $${price}?\n\nCoût total: $${totalCost.toFixed(2)}`)) {
+        return;
+    }
+    
+    try {
+        const response = await fetch('/watchlist/trading/buy/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                symbol: '{{ symbol }}',
+                quantity: quantity,
+                price: price
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            alert(`[OK] ${data.message}\n\nNouveau solde: $${data.new_balance.toFixed(2)}`);
+            // Recharger la page pour mettre à jour les informations
+            location.reload();
+        } else {
+            alert(`[ERREUR] Erreur: ${data.error}`);
+        }
+    } catch (error) {
+        alert(`[ERREUR] Erreur lors de l'achat: ${error}`);
+    }
+}
+
+// Fonction pour vendre un token
+async function sellToken() {
+    const quantity = parseFloat(document.getElementById('sellQuantity').value);
+    const price = parseFloat(document.getElementById('currentPriceSell').textContent);
+    const held = parseFloat(document.getElementById('heldQuantity')?.textContent.split(' ')[0] || 0);
+    
+    if (!quantity || quantity <= 0) {
+        alert('[ATTENTION] Veuillez entrer une quantite valide');
+        return;
+    }
+    
+    if (quantity > held) {
+        alert(`[ERREUR] Quantite insuffisante!\nVous possedez: ${held} {{ symbol }}\nVous essayez de vendre: ${quantity} {{ symbol }}`);
+        return;
+    }
+    
+    const totalRevenue = quantity * price;
+    
+    if (!confirm(`Confirmer la vente de ${quantity} {{ symbol }} à $${price}?\n\nRevenu total: $${totalRevenue.toFixed(2)}`)) {
+        return;
+    }
+    
+    try {
+        const response = await fetch('/watchlist/trading/sell/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                symbol: '{{ symbol }}',
+                quantity: quantity,
+                price: price
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            alert(`[OK] ${data.message}\n\nNouveau solde: $${data.new_balance.toFixed(2)}`);
+            // Recharger la page pour mettre à jour les informations
+            location.reload();
+        } else {
+            alert(`[ERREUR] Erreur: ${data.error}`);
+        }
+    } catch (error) {
+        alert(`[ERREUR] Erreur lors de la vente: ${error}`);
+    }
+}
+
+// Mettre à jour les prix de trading en temps réel avec les données de l'API
+function updateTradingPrices(data) {
+    if (data.ticker && data.ticker.price) {
+        document.getElementById('currentPriceBuy').textContent = data.ticker.price;
+        document.getElementById('currentPriceSell').textContent = data.ticker.price;
+        
+        // Recalculer les coûts/revenus si des quantités sont entrées
+        const buyQty = parseFloat(document.getElementById('buyQuantity').value) || 0;
+        const sellQty = parseFloat(document.getElementById('sellQuantity').value) || 0;
+        const price = parseFloat(data.ticker.price);
+        
+        if (buyQty > 0) {
+            document.getElementById('buyCost').textContent = `Coût: $${(buyQty * price).toFixed(2)}`;
+        }
+        if (sellQty > 0) {
+            document.getElementById('sellRevenue').textContent = `Revenu: $${(sellQty * price).toFixed(2)}`;
+        }
+    }
+}
+
+// Modifier la fonction fetchLiveData existante pour inclure la mise à jour des prix de trading
+const originalFetchLiveData = fetchLiveData;
+fetchLiveData = async function() {
+    await originalFetchLiveData();
+    
+    // Récupérer aussi les données pour le trading
+    try {
+        const response = await fetch(`/pairs/api/${SYMBOL}/?type=ticker`);
+        if (response.ok) {
+            const data = await response.json();
+            updateTradingPrices(data);
+        }
+    } catch (error) {
+        console.error('Erreur mise à jour prix trading:', error);
+    }
+};
 </script>
 {% endblock %}
 
