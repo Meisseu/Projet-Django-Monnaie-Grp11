@@ -11,31 +11,75 @@ Une plateforme Django moderne pour le suivi des cryptomonnaies, devises FIAT et 
 - **Watchlist & Portfolio** : Suivi des actifs et simulation de portefeuille
 - **Gestion de session** : Sauvegarde des préférences utilisateur
 
-## Installation
+## 🚀 Installation et Lancement
 
-1. Installer les dépendances :
+### Prérequis
+- Python 3.8 ou supérieur
+- pip (gestionnaire de paquets Python)
+- Connexion Internet (pour l'API Binance)
+
+### Installation rapide
+
+#### Option 1 : Lancement automatique (Windows)
+1. Double-cliquez sur le fichier `LANCER_APPLICATION.bat`
+2. Le serveur démarre automatiquement
+3. Ouvrez votre navigateur à http://localhost:8000
+
+#### Option 2 : Ligne de commande
+
+**1. Naviguer vers le dossier du projet**
+```bash
+cd "chemin/vers/Projet groupe Django monnaie"
+```
+
+**2. Installer les dépendances**
 ```bash
 pip install -r requirements.txt
 ```
 
-2. Appliquer les migrations :
+**3. Créer les migrations de base de données**
 ```bash
+python manage.py makemigrations accounts watchlist
 python manage.py migrate
 ```
 
-3. Créer un superutilisateur (optionnel) :
+**4. (Optionnel) Créer un superutilisateur pour l'admin**
 ```bash
 python manage.py createsuperuser
 ```
 
-4. Lancer le serveur :
+**5. Lancer le serveur de développement**
 ```bash
 python manage.py runserver
 ```
 
-5. Accéder à l'application :
+Le serveur démarre sur `http://localhost:8000` ou `http://127.0.0.1:8000`
+
+**6. Accéder à l'application**
+Ouvrez votre navigateur et allez à :
+- **Page d'accueil** : http://localhost:8000
+- **Interface admin** : http://localhost:8000/admin (si superutilisateur créé)
+
+### Arrêter le serveur
+Dans le terminal où le serveur tourne, appuyez sur `Ctrl + C` (Windows/Linux) ou `Ctrl + Break` (Windows)
+
+### Problèmes courants
+
+**❌ Erreur "No module named 'django'"**
+```bash
+pip install -r requirements.txt
 ```
-http://localhost:8000
+
+**❌ Erreur "Port already in use"**
+```bash
+python manage.py runserver 8080
+# Puis allez sur http://localhost:8080
+```
+
+**❌ Erreurs de migration**
+```bash
+python manage.py makemigrations
+python manage.py migrate --run-syncdb
 ```
 
 ## Structure du Projet

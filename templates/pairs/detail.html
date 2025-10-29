@@ -133,22 +133,30 @@
                                 <tr>
                                     <th>Prix (Achat)</th>
                                     <th>Quantité</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for bid in order_book.bids|slice:":10" %}
+                                <tr>
+                                    <td class="price-up">{{ bid.0 }}</td>
+                                    <td>{{ bid.1 }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        
+                        <table class="table table-sm mb-0 mt-3">
+                            <thead>
+                                <tr>
                                     <th>Prix (Vente)</th>
                                     <th>Quantité</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {% for i in order_book.bids|slice:":10" %}
+                                {% for ask in order_book.asks|slice:":10" %}
                                 <tr>
-                                    <td class="price-up">{{ i.0 }}</td>
-                                    <td>{{ i.1 }}</td>
-                                    {% if forloop.counter0 < order_book.asks|length %}
-                                    <td class="price-down">{{ order_book.asks|index:forloop.counter0|index:0 }}</td>
-                                    <td>{{ order_book.asks|index:forloop.counter0|index:1 }}</td>
-                                    {% else %}
-                                    <td>-</td>
-                                    <td>-</td>
-                                    {% endif %}
+                                    <td class="price-down">{{ ask.0 }}</td>
+                                    <td>{{ ask.1 }}</td>
                                 </tr>
                                 {% endfor %}
                             </tbody>
