@@ -65,3 +65,25 @@
     -webkit-text-fill-color: transparent;
 }
 
+/* Responsive charts */
+canvas {
+    max-width: 100%;
+    height: auto !important;
+}
+
+.chart-container {
+    position: relative;
+    width: 100%;
+}
+
+/* Responsive adjustments for mobile */
+@media (max-width: 768px) {
+    .chart-container {
+        height: 250px !important;
+    }
+    
+    canvas {
+        max-height: 250px;
+    }
+}
+

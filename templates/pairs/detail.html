@@ -77,7 +77,9 @@
                         <label class="btn btn-outline-primary" for="chart1w" onclick="showChart('1w')">1S</label>
                     </div>
                     
-                    <canvas id="priceChart" height="300"></canvas>
+                    <div style="position: relative; height: 400px; max-height: 50vh;">
+                        <canvas id="priceChart"></canvas>
+                    </div>
                 </div>
             </div>
         </div>
@@ -331,13 +333,17 @@ function showChart(period) {
                 x: {
                     display: true,
                     grid: { color: 'rgba(255, 255, 255, 0.1)' },
-                    ticks: { color: '#94a3b8' }
+                    ticks: { 
+                        color: '#94a3b8',
+                        maxTicksLimit: 8
+                    }
                 },
                 y: {
                     display: true,
                     grid: { color: 'rgba(255, 255, 255, 0.1)' },
                     ticks: {
                         color: '#94a3b8',
+                        maxTicksLimit: 8,
                         callback: function(value) {
                             return '$ ' + value.toFixed(2);
                         }

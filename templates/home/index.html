@@ -76,7 +76,9 @@
                                     </button>
                                 </div>
                                 <div class="col-md-8">
-                                    <canvas id="chart-{{ forloop.counter }}" height="200"></canvas>
+                                    <div style="position: relative; height: 250px;">
+                                        <canvas id="chart-{{ forloop.counter }}"></canvas>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -186,7 +188,10 @@ if (ctx{{ forloop.counter }}) {
                 y: {
                     display: true,
                     grid: { color: 'rgba(255, 255, 255, 0.1)' },
-                    ticks: { color: '#94a3b8' }
+                    ticks: { 
+                        color: '#94a3b8',
+                        maxTicksLimit: 6
+                    }
                 }
             }
         }
