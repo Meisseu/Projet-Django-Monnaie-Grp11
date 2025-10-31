@@ -112,3 +112,7 @@ SESSION_COOKIE_AGE = 86400  # 24 hours
 # Binance API Configuration
 BINANCE_API_BASE_URL = 'https://api.binance.com'
 
+
+LOGIN_URL = '/accounts/login/'
+LOGIN_REDIRECT_URL = '/home/'
+LOGOUT_REDIRECT_URL = '/'

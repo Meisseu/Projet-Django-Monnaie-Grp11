@@ -1,29 +1,50 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.views import View
 from django.http import JsonResponse
-from django.views.decorators.http import require_POST
+from django.views import View
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth.mixins import LoginRequiredMixin
+
 from accounts.models import UserProfile
-from .models import Watchlist, Portfolio, TradingBalance
+from .models import Watchlist, Portfolio
 from api_services.binance_service import BinanceAPIService
+
 import json
 
 
-class WatchlistView(View):
-    """Vue pour afficher la watchlist et le portfolio"""
-    
+def _get_or_create_profile(request):
+    """
+    Récupère (ou crée) le UserProfile lié à l'utilisateur connecté
+    et synchronise son id dans la session (user_profile_id).
+    """
+    profile = UserProfile.objects.filter(user=request.user).first()
+    if not profile:
+        if not request.session.session_key:
+            request.session.save()
+        profile = UserProfile.objects.create(
+            user=request.user,
+            session_key=request.session.session_key or '',
+            profile_type=request.session.get('profile_type', 'beginner'),
+            market_preference=request.session.get('market_preference', 'crypto'),
+        )
+    request.session['user_profile_id'] = profile.id
+    return profile
+
+
+class WatchlistView(LoginRequiredMixin, View):
+    """Vue pour afficher la watchlist et le portfolio (requiert connexion)"""
+
+    login_url = '/accounts/login/'
+    redirect_field_name = 'next'
+
     def get(self, request):
-        # Vérifier si l'utilisateur a un profil
-        if 'user_profile_id' not in request.session:
-            return redirect('landing:index')
-        
-        profile = get_object_or_404(UserProfile, id=request.session['user_profile_id'])
-        
+        # Profil garanti pour l'utilisateur connecté
+        profile = _get_or_create_profile(request)
+
         # Récupérer la watchlist
         watchlist_items = Watchlist.objects.filter(user_profile=profile)
         watchlist_data = []
-        
+
         for item in watchlist_items:
             ticker = BinanceAPIService.get_24hr_ticker(item.symbol)
             if ticker:
@@ -36,21 +57,21 @@ class WatchlistView(View):
                     'high': ticker.get('highPrice', '0'),
                     'low': ticker.get('lowPrice', '0'),
                 })
-        
+
         # Récupérer le portfolio
         portfolio_items = Portfolio.objects.filter(user_profile=profile)
         portfolio_data = []
-        total_value = 0
-        total_profit_loss = 0
-        
+        total_value = 0.0
+        total_profit_loss = 0.0
+
         for item in portfolio_items:
             ticker = BinanceAPIService.get_24hr_ticker(item.symbol)
             if ticker:
-                current_price = float(ticker.get('lastPrice', '0'))
+                current_price = float(ticker.get('lastPrice', '0') or 0)
                 current_value = item.current_value(current_price)
                 profit_loss = item.profit_loss(current_price)
                 profit_loss_pct = item.profit_loss_percent(current_price)
-                
+
                 portfolio_data.append({
                     'id': item.id,
                     'symbol': item.symbol,
@@ -62,10 +83,10 @@ class WatchlistView(View):
                     'profit_loss_percent': profit_loss_pct,
                     'notes': item.notes,
                 })
-                
+
                 total_value += current_value
                 total_profit_loss += profit_loss
-        
+
         context = {
             'profile': profile,
             'watchlist': watchlist_data,
@@ -73,85 +94,89 @@ class WatchlistView(View):
             'total_value': total_value,
             'total_profit_loss': total_profit_loss,
         }
-        
+
         return render(request, 'watchlist/watchlist.html', context)
 
 
-class AddToWatchlistView(View):
-    """Ajouter une paire à la watchlist"""
-    
+class AddToWatchlistView(LoginRequiredMixin, View):
+    """Ajouter une paire à la watchlist (POST JSON)"""
+
+    login_url = '/accounts/login/'
+    redirect_field_name = 'next'
+
+    # Tu utilises des requêtes JSON (fetch) → on garde csrf_exempt ici
     @method_decorator(csrf_exempt)
     def dispatch(self, *args, **kwargs):
         return super().dispatch(*args, **kwargs)
-    
+
     def post(self, request):
-        if 'user_profile_id' not in request.session:
-            return JsonResponse({'error': 'Non authentifié'}, status=401)
-        
         try:
-            data = json.loads(request.body)
-            symbol = data.get('symbol', '').upper()
-            
-            profile = UserProfile.objects.get(id=request.session['user_profile_id'])
-            
-            # Vérifier si déjà dans la watchlist
+            profile = _get_or_create_profile(request)
+
+            data = json.loads(request.body or '{}')
+            symbol = (data.get('symbol') or '').upper().strip()
+
+            if not symbol:
+                return JsonResponse({'error': 'Symbole requis'}, status=400)
+
+            # Déjà présent ?
             if Watchlist.objects.filter(user_profile=profile, symbol=symbol).exists():
                 return JsonResponse({'error': 'Déjà dans la watchlist'}, status=400)
-            
-            # Ajouter à la watchlist
+
             Watchlist.objects.create(user_profile=profile, symbol=symbol)
-            
             return JsonResponse({'success': True, 'message': 'Ajouté à la watchlist'})
-        
+
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'JSON invalide'}, status=400)
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=500)
 
 
-class RemoveFromWatchlistView(View):
-    """Retirer une paire de la watchlist"""
-    
+class RemoveFromWatchlistView(LoginRequiredMixin, View):
+    """Retirer une paire de la watchlist (POST)"""
+
+    login_url = '/accounts/login/'
+    redirect_field_name = 'next'
+
     @method_decorator(csrf_exempt)
     def dispatch(self, *args, **kwargs):
         return super().dispatch(*args, **kwargs)
-    
+
     def post(self, request, watchlist_id):
-        if 'user_profile_id' not in request.session:
-            return JsonResponse({'error': 'Non authentifié'}, status=401)
-        
         try:
-            profile = UserProfile.objects.get(id=request.session['user_profile_id'])
+            profile = _get_or_create_profile(request)
             watchlist_item = get_object_or_404(Watchlist, id=watchlist_id, user_profile=profile)
             watchlist_item.delete()
-            
             return JsonResponse({'success': True, 'message': 'Retiré de la watchlist'})
-        
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=500)
 
 
-class AddToPortfolioView(View):
-    """Ajouter un actif au portfolio"""
-    
+class AddToPortfolioView(LoginRequiredMixin, View):
+    """Ajouter un actif au portfolio (POST JSON)"""
+
+    login_url = '/accounts/login/'
+    redirect_field_name = 'next'
+
     @method_decorator(csrf_exempt)
     def dispatch(self, *args, **kwargs):
         return super().dispatch(*args, **kwargs)
-    
+
     def post(self, request):
-        if 'user_profile_id' not in request.session:
-            return JsonResponse({'error': 'Non authentifié'}, status=401)
-        
         try:
-            data = json.loads(request.body)
-            symbol = data.get('symbol', '').upper()
-            quantity = float(data.get('quantity', 0))
-            purchase_price = float(data.get('purchase_price', 0))
-            notes = data.get('notes', '')
-            
+            profile = _get_or_create_profile(request)
+
+            data = json.loads(request.body or '{}')
+            symbol = (data.get('symbol') or '').upper().strip()
+            quantity = float(data.get('quantity') or 0)
+            purchase_price = float(data.get('purchase_price') or 0)
+            notes = data.get('notes') or ''
+
+            if not symbol:
+                return JsonResponse({'error': 'Symbole requis'}, status=400)
             if quantity <= 0 or purchase_price <= 0:
-                return JsonResponse({'error': 'Quantité et prix invalides'}, status=400)
-            
-            profile = UserProfile.objects.get(id=request.session['user_profile_id'])
-            
+                return JsonResponse({'error': 'Quantité et prix doivent être > 0'}, status=400)
+
             Portfolio.objects.create(
                 user_profile=profile,
                 symbol=symbol,
@@ -159,207 +184,30 @@ class AddToPortfolioView(View):
                 purchase_price=purchase_price,
                 notes=notes
             )
-            
+
             return JsonResponse({'success': True, 'message': 'Ajouté au portfolio'})
-        
+
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'JSON invalide'}, status=400)
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=500)
 
 
-class RemoveFromPortfolioView(View):
-    """Retirer un actif du portfolio"""
-    
+class RemoveFromPortfolioView(LoginRequiredMixin, View):
+    """Retirer un actif du portfolio (POST)"""
+
+    login_url = '/accounts/login/'
+    redirect_field_name = 'next'
+
     @method_decorator(csrf_exempt)
     def dispatch(self, *args, **kwargs):
         return super().dispatch(*args, **kwargs)
-    
+
     def post(self, request, portfolio_id):
-        if 'user_profile_id' not in request.session:
-            return JsonResponse({'error': 'Non authentifié'}, status=401)
-        
         try:
-            profile = UserProfile.objects.get(id=request.session['user_profile_id'])
+            profile = _get_or_create_profile(request)
             portfolio_item = get_object_or_404(Portfolio, id=portfolio_id, user_profile=profile)
             portfolio_item.delete()
-            
             return JsonResponse({'success': True, 'message': 'Retiré du portfolio'})
-        
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=500)
-
-
-class BuyTokenView(View):
-    """Acheter un token (paper trading)"""
-    
-    @method_decorator(csrf_exempt)
-    def dispatch(self, *args, **kwargs):
-        return super().dispatch(*args, **kwargs)
-    
-    def post(self, request):
-        if 'user_profile_id' not in request.session:
-            return JsonResponse({'error': 'Non authentifié'}, status=401)
-        
-        try:
-            data = json.loads(request.body)
-            symbol = data.get('symbol', '').upper()
-            quantity = float(data.get('quantity', 0))
-            price = float(data.get('price', 0))
-            
-            if quantity <= 0 or price <= 0:
-                return JsonResponse({'error': 'Quantité et prix invalides'}, status=400)
-            
-            profile = UserProfile.objects.get(id=request.session['user_profile_id'])
-            
-            # Créer ou récupérer le solde de trading
-            trading_balance, created = TradingBalance.objects.get_or_create(
-                user_profile=profile
-            )
-            
-            # Calculer le coût total
-            total_cost = quantity * price
-            
-            # Vérifier si l'utilisateur a assez de fonds
-            if not trading_balance.can_buy(total_cost):
-                return JsonResponse({
-                    'error': f'Fonds insuffisants. Solde: ${float(trading_balance.balance):.2f}, Requis: ${total_cost:.2f}'
-                }, status=400)
-            
-            # Retirer les fonds
-            trading_balance.remove_funds(total_cost)
-            
-            # Ajouter au portfolio
-            Portfolio.objects.create(
-                user_profile=profile,
-                symbol=symbol,
-                quantity=quantity,
-                purchase_price=price,
-                notes=f"Achat fictif - ${total_cost:.2f}"
-            )
-            
-            return JsonResponse({
-                'success': True,
-                'message': f'Acheté {quantity} {symbol} à ${price:.2f}',
-                'new_balance': float(trading_balance.balance),
-                'total_cost': total_cost
-            })
-        
-        except Exception as e:
-            return JsonResponse({'error': str(e)}, status=500)
-
-
-class SellTokenView(View):
-    """Vendre un token (paper trading)"""
-    
-    @method_decorator(csrf_exempt)
-    def dispatch(self, *args, **kwargs):
-        return super().dispatch(*args, **kwargs)
-    
-    def post(self, request):
-        if 'user_profile_id' not in request.session:
-            return JsonResponse({'error': 'Non authentifié'}, status=401)
-        
-        try:
-            data = json.loads(request.body)
-            symbol = data.get('symbol', '').upper()
-            quantity = float(data.get('quantity', 0))
-            price = float(data.get('price', 0))
-            
-            if quantity <= 0 or price <= 0:
-                return JsonResponse({'error': 'Quantité et prix invalides'}, status=400)
-            
-            profile = UserProfile.objects.get(id=request.session['user_profile_id'])
-            
-            # Récupérer toutes les positions pour ce symbole
-            portfolio_items = Portfolio.objects.filter(
-                user_profile=profile,
-                symbol=symbol
-            ).order_by('purchase_date')
-            
-            # Calculer la quantité totale détenue
-            total_held = sum(float(item.quantity) for item in portfolio_items)
-            
-            if total_held < quantity:
-                return JsonResponse({
-                    'error': f'Quantité insuffisante. Vous possédez {total_held} {symbol}'
-                }, status=400)
-            
-            # Créer ou récupérer le solde de trading
-            trading_balance, created = TradingBalance.objects.get_or_create(
-                user_profile=profile
-            )
-            
-            # Calculer le montant de la vente
-            total_revenue = quantity * price
-            
-            # Ajouter les fonds
-            trading_balance.add_funds(total_revenue)
-            
-            # Réduire les positions (FIFO - First In First Out)
-            remaining_to_sell = quantity
-            for item in portfolio_items:
-                if remaining_to_sell <= 0:
-                    break
-                
-                item_qty = float(item.quantity)
-                if item_qty <= remaining_to_sell:
-                    # Vendre toute la position
-                    remaining_to_sell -= item_qty
-                    item.delete()
-                else:
-                    # Vendre partiellement
-                    item.quantity = item_qty - remaining_to_sell
-                    item.save()
-                    remaining_to_sell = 0
-            
-            return JsonResponse({
-                'success': True,
-                'message': f'Vendu {quantity} {symbol} à ${price:.2f}',
-                'new_balance': float(trading_balance.balance),
-                'total_revenue': total_revenue
-            })
-        
-        except Exception as e:
-            return JsonResponse({'error': str(e)}, status=500)
-
-
-class GetTradingBalanceView(View):
-    """Récupérer le solde de trading"""
-    
-    def get(self, request):
-        if 'user_profile_id' not in request.session:
-            return JsonResponse({'error': 'Non authentifié'}, status=401)
-        
-        try:
-            profile = UserProfile.objects.get(id=request.session['user_profile_id'])
-            trading_balance, created = TradingBalance.objects.get_or_create(
-                user_profile=profile
-            )
-            
-            # Calculer la valeur totale du portfolio
-            portfolio_items = Portfolio.objects.filter(user_profile=profile)
-            portfolio_value = 0
-            
-            for item in portfolio_items:
-                ticker = BinanceAPIService.get_24hr_ticker(item.symbol)
-                if ticker:
-                    current_price = float(ticker.get('lastPrice', '0'))
-                    portfolio_value += item.current_value(current_price)
-            
-            # Calculer la quantité pour chaque symbole
-            symbol_quantities = {}
-            for item in portfolio_items:
-                if item.symbol not in symbol_quantities:
-                    symbol_quantities[item.symbol] = 0
-                symbol_quantities[item.symbol] += float(item.quantity)
-            
-            return JsonResponse({
-                'success': True,
-                'balance': float(trading_balance.balance),
-                'portfolio_value': portfolio_value,
-                'total_value': float(trading_balance.balance) + portfolio_value,
-                'holdings': symbol_quantities
-            })
-        
-        except Exception as e:
-            return JsonResponse({'error': str(e)}, status=500)
-
