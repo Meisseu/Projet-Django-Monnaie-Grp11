@@ -1,101 +1,53 @@
 {% extends "base.html" %}
+{% load static %}
+{# Template mis à jour: nouvelle landing page avec authentification #}
 
 {% block title %}Bienvenue - Crypto Monitor{% endblock %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/aurora-background.css' %}">
+<style>
+    /* Override body background for landing page */
+    body {
+        background: #000000 !important;
+    }
+    
+    /* Ensure container doesn't interfere with background */
+    .aurora-content .container-fluid {
+        max-width: 100%;
+        margin: 0;
+        padding: 2rem 1rem;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="container py-5">
-    <div class="row justify-content-center">
-        <div class="col-lg-8 text-center mb-5">
-            <h1 class="display-3 fw-bold mb-4" style="background: linear-gradient(135deg, #6366f1, #8b5cf6); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
-                <i class="bi bi-graph-up-arrow"></i> Crypto Monitor
-            </h1>
-            <p class="lead text-muted">
-                Votre plateforme de monitoring professionnelle pour les cryptomonnaies, devises FIAT et matières premières tokenisées
-            </p>
+<!-- Aurora Background Hero Section -->
+<div class="aurora-background" id="auroraBackground"></div>
+<div class="aurora-content" style="position: relative; z-index: 1; margin: 0; padding: 0;">
+    <div class="container-fluid" style="min-height: 100vh; display: flex; align-items: flex-start; justify-content: center; flex-direction: column; padding: 4rem 1rem 2rem 1rem;">
+        <div class="aurora-title aurora-fade-in" style="text-align: center; width: 100%; margin: 0 auto;">
+            Découvrez votre nouveau simulateur de trading crypto
         </div>
-    </div>
-    
-    <div class="row justify-content-center">
-        <div class="col-lg-6">
-            <div class="card shadow-lg">
-                <div class="card-body p-5">
-                    <h3 class="card-title text-center mb-4">
-                        <i class="bi bi-person-circle"></i> Sélectionnez votre profil
-                    </h3>
-                    
-                    {% if error %}
-                    <div class="alert alert-danger" role="alert">
-                        <i class="bi bi-exclamation-triangle"></i> {{ error }}
-                    </div>
-                    {% endif %}
-                    
-                    <form method="post">
-                        {% csrf_token %}
-                        
-                        <!-- Type de profil -->
-                        <div class="mb-4">
-                            <label class="form-label fw-bold">
-                                <i class="bi bi-person-badge"></i> Type de profil
-                            </label>
-                            <select name="profile_type" class="form-select form-select-lg" required>
-                                <option value="">Choisissez votre profil...</option>
-                                <option value="beginner">
-                                    <i class="bi bi-egg"></i> Investisseur débutant
-                                </option>
-                                <option value="trader">
-                                    <i class="bi bi-lightning"></i> Trader confirmé
-                                </option>
-                                <option value="analyst">
-                                    <i class="bi bi-graph-up"></i> Analyste
-                                </option>
-                            </select>
-                            <div class="form-text">
-                                Sélectionnez le profil qui correspond le mieux à votre expérience
-                            </div>
-                        </div>
-                        
-                        <!-- Type de marché -->
-                        <div class="mb-4">
-                            <label class="form-label fw-bold">
-                                <i class="bi bi-currency-exchange"></i> Marché préféré
-                            </label>
-                            <select name="market_preference" class="form-select form-select-lg" required>
-                                <option value="">Choisissez un marché...</option>
-                                <option value="crypto">
-                                    <i class="bi bi-coin"></i> Cryptomonnaies
-                                </option>
-                                <option value="fiat">
-                                    <i class="bi bi-cash-stack"></i> Devises FIAT
-                                </option>
-                                <option value="commodities">
-                                    <i class="bi bi-gem"></i> Matières premières tokenisées
-                                </option>
-                            </select>
-                            <div class="form-text">
-                                Choisissez le type de marché que vous souhaitez suivre principalement
-                            </div>
-                        </div>
-                        
-                        <div class="d-grid">
-                            <button type="submit" class="btn btn-primary btn-lg">
-                                <i class="bi bi-arrow-right-circle"></i> Commencer
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
+        <div class="aurora-subtitle aurora-fade-in" style="animation-delay: 0.5s; text-align: center; width: 100%; margin: 1rem auto 0;">
+            Tradez en temps réel avec des comptes multiples (Finance, Trading, Marge) • Effet de levier jusqu'à x5 • Suivez votre P&L en direct
         </div>
+        <a href="{% url 'accounts:auth' %}" class="aurora-button aurora-fade-in" style="animation-delay: 0.7s; margin: 2rem auto 0; display: block;">
+            Enter dApp
+        </a>
     </div>
-    
+</div>
+
+<div class="py-5" style="position: relative; z-index: 1; background: transparent;">
     <!-- Fonctionnalités -->
-    <div class="row mt-5 g-4">
+    <div class="row g-4 mb-5">
         <div class="col-md-4">
             <div class="card h-100 text-center">
-                <div class="card-body">
-                    <div class="mb-3" style="font-size: 3rem; color: #6366f1;">
+                <div class="card-body p-4">
+                    <div class="mb-3" style="font-size: 3.5rem; color: #6366f1;">
                         <i class="bi bi-speedometer2"></i>
                     </div>
-                    <h5 class="card-title">Données en temps réel</h5>
+                    <h5 class="card-title fw-bold">Données en temps réel</h5>
                     <p class="card-text text-muted">
                         Accédez aux prix et variations en temps réel grâce à l'API Binance
                     </p>
@@ -105,11 +57,11 @@
         
         <div class="col-md-4">
             <div class="card h-100 text-center">
-                <div class="card-body">
-                    <div class="mb-3" style="font-size: 3rem; color: #8b5cf6;">
+                <div class="card-body p-4">
+                    <div class="mb-3" style="font-size: 3.5rem; color: #8b5cf6;">
                         <i class="bi bi-graph-up"></i>
                     </div>
-                    <h5 class="card-title">Analyses détaillées</h5>
+                    <h5 class="card-title fw-bold">Analyses détaillées</h5>
                     <p class="card-text text-muted">
                         Graphiques interactifs et historique des transactions pour chaque paire
                     </p>
@@ -119,11 +71,11 @@
         
         <div class="col-md-4">
             <div class="card h-100 text-center">
-                <div class="card-body">
-                    <div class="mb-3" style="font-size: 3rem; color: #10b981;">
+                <div class="card-body p-4">
+                    <div class="mb-3" style="font-size: 3.5rem; color: #10b981;">
                         <i class="bi bi-star-fill"></i>
                     </div>
-                    <h5 class="card-title">Portfolio personnalisé</h5>
+                    <h5 class="card-title fw-bold">Portfolio personnalisé</h5>
                     <p class="card-text text-muted">
                         Créez votre watchlist et simulez votre portefeuille d'investissement
                     </p>
@@ -131,12 +83,36 @@
             </div>
         </div>
     </div>
+    
+    <!-- Statistiques -->
+    <div class="row justify-content-center mt-5">
+        <div class="col-lg-10">
+            <div class="card bg-gradient" style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1));">
+                <div class="card-body p-5 text-center">
+                    <h3 class="mb-4">Pourquoi choisir Crypto Monitor ?</h3>
+                    <div class="row g-4">
+                        <div class="col-md-3">
+                            <h2 class="fw-bold" style="color: #6366f1;">3,366+</h2>
+                            <p class="text-muted">Paires de trading</p>
+                        </div>
+                        <div class="col-md-3">
+                            <h2 class="fw-bold" style="color: #8b5cf6;">24/7</h2>
+                            <p class="text-muted">Données en temps réel</p>
+                        </div>
+                        <div class="col-md-3">
+                            <h2 class="fw-bold" style="color: #10b981;">100%</h2>
+                            <p class="text-muted">Gratuit</p>
+                        </div>
+                        <div class="col-md-3">
+                            <h2 class="fw-bold" style="color: #ef4444;">API</h2>
+                            <p class="text-muted">Binance officielle</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
-<style>
-    .form-select option {
-        padding: 10px;
-    }
-</style>
 {% endblock %}
 

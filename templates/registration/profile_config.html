@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+
+{% block title %}Configuration du profil - Crypto Monitor{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6 col-md-8">
+            <div class="card shadow-lg">
+                <div class="card-body p-5">
+                    <div class="text-center mb-4">
+                        <h2 class="fw-bold" style="background: linear-gradient(135deg, #6366f1, #8b5cf6); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                            <i class="bi bi-gear-fill"></i> Configuration du profil
+                        </h2>
+                        <p class="text-muted">Personnalisez votre expérience Crypto Monitor</p>
+                    </div>
+                    
+                    {% if form.errors %}
+                    <div class="alert alert-danger" role="alert">
+                        <i class="bi bi-exclamation-triangle"></i> 
+                        <strong>Erreur :</strong> Veuillez corriger les erreurs ci-dessous.
+                    </div>
+                    {% endif %}
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <!-- Informations utilisateur -->
+                        <div class="alert alert-info mb-4">
+                            <i class="bi bi-info-circle"></i> 
+                            <strong>Connecté en tant que :</strong> {{ user.username }}
+                            {% if user.email %}
+                            <br><i class="bi bi-envelope"></i> {{ user.email }}
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Type de profil -->
+                        <div class="mb-4">
+                            <label for="{{ form.profile_type.id_for_label }}" class="form-label fw-bold">
+                                <i class="bi bi-person-badge"></i> {{ form.profile_type.label }}
+                            </label>
+                            {{ form.profile_type }}
+                            {% if form.profile_type.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in form.profile_type.errors %}
+                                        <i class="bi bi-exclamation-circle"></i> {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">
+                                <ul class="mb-0 small">
+                                    <li><strong>Investisseur débutant :</strong> Interface simplifiée avec explications</li>
+                                    <li><strong>Trader confirmé :</strong> Outils avancés et graphiques professionnels</li>
+                                    <li><strong>Analyste :</strong> Données détaillées et indicateurs techniques</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <!-- Marché préféré -->
+                        <div class="mb-4">
+                            <label for="{{ form.market_preference.id_for_label }}" class="form-label fw-bold">
+                                <i class="bi bi-currency-exchange"></i> {{ form.market_preference.label }}
+                            </label>
+                            {{ form.market_preference }}
+                            {% if form.market_preference.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in form.market_preference.errors %}
+                                        <i class="bi bi-exclamation-circle"></i> {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">
+                                <ul class="mb-0 small">
+                                    <li><strong>Cryptomonnaies :</strong> Bitcoin, Ethereum, Altcoins (BTC, ETH, etc.)</li>
+                                    <li><strong>Devises FIAT :</strong> EUR, USD, GBP et autres devises traditionnelles</li>
+                                    <li><strong>Matières premières :</strong> Or, argent et autres commodities tokenisées</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <!-- Boutons d'action -->
+                        <div class="d-grid gap-2 mb-3">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="bi bi-check-circle"></i> Enregistrer les modifications
+                            </button>
+                            <a href="{% url 'home:index' %}" class="btn btn-outline-secondary">
+                                <i class="bi bi-x-circle"></i> Annuler
+                            </a>
+                        </div>
+                        
+                        <!-- Hidden next field -->
+                        {% if request.GET.next %}
+                            <input type="hidden" name="next" value="{{ request.GET.next }}">
+                        {% endif %}
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Statistiques du profil -->
+            {% if profile %}
+            <div class="card mt-4">
+                <div class="card-body">
+                    <h6 class="card-title fw-bold mb-3">
+                        <i class="bi bi-info-circle"></i> Informations du profil
+                    </h6>
+                    <div class="row g-2 text-center">
+                        <div class="col-6">
+                            <small class="text-muted d-block">Profil actuel</small>
+                            <span class="badge bg-primary">{{ profile.get_profile_type_display }}</span>
+                        </div>
+                        <div class="col-6">
+                            <small class="text-muted d-block">Marché préféré</small>
+                            <span class="badge bg-success">{{ profile.get_market_preference_display }}</span>
+                        </div>
+                        <div class="col-6">
+                            <small class="text-muted d-block">Membre depuis</small>
+                            <small>{{ profile.created_at|date:"d/m/Y" }}</small>
+                        </div>
+                        <div class="col-6">
+                            <small class="text-muted d-block">Dernière maj</small>
+                            <small>{{ profile.updated_at|date:"d/m/Y" }}</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+    .form-select:focus {
+        border-color: #6366f1;
+        box-shadow: 0 0 0 0.2rem rgba(99, 102, 241, 0.25);
+    }
+</style>
+{% endblock %}
+

@@ -170,10 +170,54 @@
                             <i class="bi bi-star"></i> Watchlist
                         </a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link text-danger" href="{% url 'accounts:logout' %}">
-                            <i class="bi bi-box-arrow-right"></i> Déconnexion
+                    <!-- Dropdown Portfolio -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="portfolioDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-wallet2"></i> Portfolio
                         </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="portfolioDropdown" style="background: var(--card-bg); border: 1px solid rgba(255, 255, 255, 0.1);">
+                            <li>
+                                <a class="dropdown-item" href="{% url 'watchlist:portfolio' %}" style="color: #e2e8f0;">
+                                    <i class="bi bi-speedometer2"></i> Vue d'ensemble
+                                </a>
+                            </li>
+                            <li><hr class="dropdown-divider" style="border-color: rgba(255, 255, 255, 0.1);"></li>
+                            <li>
+                                <a class="dropdown-item" href="{% url 'watchlist:portfolio_finance' %}" style="color: #e2e8f0;">
+                                    <i class="bi bi-bank"></i> Finance
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{% url 'watchlist:portfolio_trading' %}" style="color: #e2e8f0;">
+                                    <i class="bi bi-coin"></i> Trading Spot
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{% url 'watchlist:portfolio_margin' %}" style="color: #e2e8f0;">
+                                    <i class="bi bi-credit-card-2-front"></i> Marge (Cross Margin)
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                    
+                    <!-- Dropdown utilisateur -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-person-circle"></i> {{ user.username }}
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown" style="background: var(--card-bg); border: 1px solid rgba(255, 255, 255, 0.1);">
+                            <li>
+                                <a class="dropdown-item" href="{% url 'accounts:profile_config' %}" style="color: #e2e8f0;">
+                                    <i class="bi bi-gear"></i> Configuration du profil
+                                </a>
+                            </li>
+                            <li><hr class="dropdown-divider" style="border-color: rgba(255, 255, 255, 0.1);"></li>
+                            <li>
+                                <a class="dropdown-item text-danger" href="{% url 'accounts:logout' %}">
+                                    <i class="bi bi-box-arrow-right"></i> Déconnexion
+                                </a>
+                            </li>
+                        </ul>
                     </li>
 
                     {% else %}
@@ -184,7 +228,7 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'accounts:signup' %}">
+                        <a class="nav-link btn btn-primary ms-2" href="{% url 'accounts:signup' %}" style="color: white !important;">
                             <i class="bi bi-person-plus"></i> Inscription
                         </a>
                     </li>
@@ -211,7 +255,7 @@
     <footer class="footer mt-5">
         <div class="container text-center">
             <p class="mb-0">
-                <i class="bi bi-graph-up"></i> Crypto Monitor Platform &copy; 2025 |
+                <i class="bi bi-graph-up"></i> DEX Simulator &copy; 2025 |
                 Powered by <a href="https://www.binance.com" target="_blank" class="text-decoration-none"
                     style="color: var(--primary-color);">Binance API</a>
             </p>

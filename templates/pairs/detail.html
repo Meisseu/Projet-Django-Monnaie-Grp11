@@ -242,6 +242,26 @@
         transform: translateY(-2px);
         box-shadow: 0 4px 16px rgba(99, 102, 241, 0.2);
     }
+    
+    /* Style pour le sélecteur d'intervalle */
+    .btn-outline-primary {
+        border-color: #6366f1 !important;
+        color: #8b92ff !important;
+        background: transparent !important;
+    }
+    
+    .btn-outline-primary:hover,
+    .btn-outline-primary:focus,
+    .btn-check:checked + .btn-outline-primary {
+        background: #6366f1 !important;
+        border-color: #6366f1 !important;
+        color: #ffffff !important;
+        box-shadow: 0 0 8px rgba(99, 102, 241, 0.5) !important;
+    }
+    
+    .btn-group .btn-check:checked + .btn-outline-primary {
+        z-index: 1;
+    }
 </style>
 {% endblock %}
 
@@ -318,6 +338,38 @@
                         </div>
                     </div>
                     
+                    <!-- Sélecteur d'intervalle pour le graphique -->
+                    <div class="mb-3 d-flex align-items-center gap-2 flex-wrap">
+                        <label class="mb-0 fw-bold text-white">
+                            <i class="bi bi-clock-history"></i> Intervalle:
+                        </label>
+                        <div class="btn-group" role="group" aria-label="Sélection d'intervalle">
+                            <input type="radio" class="btn-check" name="chartInterval" id="interval1m" value="1" checked>
+                            <label class="btn btn-outline-primary btn-sm" for="interval1m">1m</label>
+                            
+                            <input type="radio" class="btn-check" name="chartInterval" id="interval5m" value="5">
+                            <label class="btn btn-outline-primary btn-sm" for="interval5m">5m</label>
+                            
+                            <input type="radio" class="btn-check" name="chartInterval" id="interval15m" value="15">
+                            <label class="btn btn-outline-primary btn-sm" for="interval15m">15m</label>
+                            
+                            <input type="radio" class="btn-check" name="chartInterval" id="interval30m" value="30">
+                            <label class="btn btn-outline-primary btn-sm" for="interval30m">30m</label>
+                            
+                            <input type="radio" class="btn-check" name="chartInterval" id="interval1h" value="1H">
+                            <label class="btn btn-outline-primary btn-sm" for="interval1h">1h</label>
+                            
+                            <input type="radio" class="btn-check" name="chartInterval" id="interval4h" value="4H">
+                            <label class="btn btn-outline-primary btn-sm" for="interval4h">4h</label>
+                            
+                            <input type="radio" class="btn-check" name="chartInterval" id="interval1D" value="D">
+                            <label class="btn btn-outline-primary btn-sm" for="interval1D">1D</label>
+                            
+                            <input type="radio" class="btn-check" name="chartInterval" id="interval1W" value="W">
+                            <label class="btn btn-outline-primary btn-sm" for="interval1W">1W</label>
+                        </div>
+                    </div>
+                    
                     <!-- TradingView Widget -->
                     <div class="tradingview-widget-container" style="height: 600px; width: 100%;">
                         <div id="tradingview_chart" style="height: 100%; width: 100%;"></div>
@@ -344,25 +396,25 @@
                     </div>
                     <div class="mb-3">
                         <small class="text-muted">Plus haut (24h)</small>
-                        <h6>${{ high_24h_formatted }}</h6>
+                        <h6 id="high24h">${{ high_24h_formatted }}</h6>
                     </div>
                     <div class="mb-3">
                         <small class="text-muted">Plus bas (24h)</small>
-                        <h6>${{ low_24h_formatted }}</h6>
+                        <h6 id="low24h">${{ low_24h_formatted }}</h6>
                     </div>
                     <hr>
                     <div class="mb-3">
                         <small class="text-muted">ATH (52 semaines)</small>
-                        <h6 class="price-up">${{ ath_formatted }}</h6>
+                        <h6 class="price-up" id="ath52w">${{ ath_formatted }}</h6>
                     </div>
                     <div class="mb-0">
                         <small class="text-muted">ATL (52 semaines)</small>
-                        <h6 class="price-down">${{ atl_formatted }}</h6>
+                        <h6 class="price-down" id="atl52w">${{ atl_formatted }}</h6>
                     </div>
                 </div>
             </div>
             
-            <!-- Trading fictif -->
+            <!-- Paper Trading -->
             <div class="card">
                 <div class="card-header" style="background: linear-gradient(135deg, #6366f1, #8b5cf6) !important; border: none;">
                     <h5 class="mb-0" style="color: #ffffff;">
@@ -370,6 +422,46 @@
                     </h5>
                 </div>
                 <div class="card-body">
+                    <!-- Sélecteur de compte horizontal -->
+                    <div class="mb-3">
+                        <label class="form-label fw-bold mb-2">
+                            <i class="bi bi-wallet2"></i> Type de compte
+                        </label>
+                        <div class="btn-group w-100" role="group" aria-label="Type de compte">
+                            <input type="radio" class="btn-check" name="accountType" id="accountTypeFinance" value="finance" onchange="updateAccountBalance()">
+                            <label class="btn btn-outline-primary" for="accountTypeFinance">
+                                <i class="bi bi-bank"></i> Finance
+                            </label>
+                            
+                            <input type="radio" class="btn-check" name="accountType" id="accountTypeTrading" value="trading" checked onchange="updateAccountBalance()">
+                            <label class="btn btn-outline-primary" for="accountTypeTrading">
+                                <i class="bi bi-coin"></i> Trading Spot
+                            </label>
+                            
+                            <input type="radio" class="btn-check" name="accountType" id="accountTypeMargin" value="margin" onchange="updateAccountBalance()">
+                            <label class="btn btn-outline-primary" for="accountTypeMargin">
+                                <i class="bi bi-credit-card-2-front"></i> Marge
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <!-- Sélecteur de levier (uniquement pour Marge) -->
+                    <div class="mb-3" id="leverageSection" style="display: none;">
+                        <label class="form-label fw-bold">
+                            <i class="bi bi-graph-up-arrow"></i> Effet de levier
+                        </label>
+                        <select class="form-select" id="leverage">
+                            <option value="1">x1 (Pas de levier)</option>
+                            <option value="2">x2</option>
+                            <option value="3">x3</option>
+                            <option value="4">x4</option>
+                            <option value="5" selected>x5 (Maximum)</option>
+                        </select>
+                        <small class="text-muted d-block mt-1">
+                            <i class="bi bi-info-circle"></i> Levier maximum: x5. Risque de liquidation augmenté.
+                        </small>
+                    </div>
+                    
                     <!-- Solde actuel -->
                     <div class="mb-3 p-3" style="background: #1a1a1a; border-radius: 8px;">
                         <small class="text-muted d-block">Solde disponible</small>
@@ -377,13 +469,13 @@
                     </div>
                     
                     <!-- Position actuelle -->
-                    {% if held_quantity > 0 %}
-                    <div class="mb-3 p-3" style="background: #1a1a1a; border-radius: 8px;">
-                        <small class="text-muted d-block">Vous possédez</small>
-                        <h5 class="mb-1" id="heldQuantity">{{ held_quantity|floatformat:8 }} {{ symbol }}</h5>
-                        <small class="text-muted">Prix moyen: ${{ avg_purchase_price|floatformat:8 }}</small>
+                    <div class="mb-3" id="positionSection" style="display: none;">
+                        <div class="p-3" style="background: #1a1a1a; border-radius: 8px;">
+                            <small class="text-muted d-block">Position actuelle</small>
+                            <h5 class="mb-1" id="heldQuantity">0 {{ symbol }}</h5>
+                            <small class="text-muted">Prix moyen: $0.00</small>
+                        </div>
                     </div>
-                    {% endif %}
                     
                     <!-- Formulaire d'achat -->
                     <div class="mb-3">
@@ -391,7 +483,7 @@
                             <i class="bi bi-arrow-down-circle"></i> Acheter
                         </label>
                         <div class="input-group mb-2">
-                            <input type="number" class="form-control" id="buyQuantity" placeholder="Quantité" step="0.00000001" min="0">
+                            <input type="number" class="form-control" id="buyQuantity" placeholder="Quantité" step="0.00000001" min="0" oninput="updateBuyCost()">
                         </div>
                         <div class="d-grid">
                             <button class="btn btn-success" onclick="buyToken()">
@@ -399,6 +491,9 @@
                             </button>
                         </div>
                         <small class="text-muted" id="buyCost">Coût: $0.00</small>
+                        <small class="text-warning d-block mt-1" id="marginInfo" style="display: none;">
+                            <i class="bi bi-exclamation-triangle"></i> Marge requise: $<span id="requiredMargin">0.00</span>
+                        </small>
                     </div>
                     
                     <hr>
@@ -409,10 +504,10 @@
                             <i class="bi bi-arrow-up-circle"></i> Vendre
                         </label>
                         <div class="input-group mb-2">
-                            <input type="number" class="form-control" id="sellQuantity" placeholder="Quantité" step="0.00000001" min="0" max="{{ held_quantity }}" {% if held_quantity == 0 %}disabled{% endif %}>
+                            <input type="number" class="form-control" id="sellQuantity" placeholder="Quantité" step="0.00000001" min="0" oninput="updateSellRevenue()">
                         </div>
                         <div class="d-grid">
-                            <button class="btn btn-danger" onclick="sellToken()" {% if held_quantity == 0 %}disabled{% endif %}>
+                            <button class="btn btn-danger" onclick="sellToken()">
                                 <i class="bi bi-cart-dash"></i> Vendre à $<span id="currentPriceSell">{{ current_price.price }}</span>
                             </button>
                         </div>
@@ -530,6 +625,78 @@
         </div>
     </div>
     
+    <!-- Section Position Margin (affichée uniquement si une position margin est ouverte) -->
+    <div class="row mb-4" id="marginPositionSection" style="display: none;">
+        <div class="col-12">
+            <div class="card order-book-card">
+                <div class="card-header">
+                    <h5 class="mb-0" style="font-size: 1rem; font-weight: 600;">
+                        <i class="bi bi-graph-up-arrow" style="color: #6366f1;"></i> 
+                        <span style="color: #e0e0e0;">Position Margin Active - <span id="marginPositionSymbol"></span></span>
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <!-- Situation de la position -->
+                        <div class="col-md-6 col-lg-3">
+                            <div class="p-3" style="background: #1a1a1a; border-radius: 8px;">
+                                <small class="text-muted d-block mb-2">Quantité</small>
+                                <h5 class="mb-0 text-white" id="marginPositionQuantity">0</h5>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-lg-3">
+                            <div class="p-3" style="background: #1a1a1a; border-radius: 8px;">
+                                <small class="text-muted d-block mb-2">Prix d'entrée moyen</small>
+                                <h5 class="mb-0 text-white" id="marginPositionEntryPrice">$0.00</h5>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-lg-3">
+                            <div class="p-3" style="background: #1a1a1a; border-radius: 8px;">
+                                <small class="text-muted d-block mb-2">Prix actuel</small>
+                                <h5 class="mb-0 text-white" id="marginPositionCurrentPrice">$0.00</h5>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-lg-3">
+                            <div class="p-3" style="background: #1a1a1a; border-radius: 8px;">
+                                <small class="text-muted d-block mb-2">Levier</small>
+                                <h5 class="mb-0 text-warning" id="marginPositionLeverage">x1</h5>
+                            </div>
+                        </div>
+                        
+                        <!-- P&L -->
+                        <div class="col-md-6 col-lg-3">
+                            <div class="p-3" style="background: #1a1a1a; border-radius: 8px;">
+                                <small class="text-muted d-block mb-2">P&L Non réalisé</small>
+                                <h5 class="mb-0" id="marginPositionPnL" style="color: #10b981;">$0.00</h5>
+                                <small class="text-muted" id="marginPositionPnLPercent">0.00%</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-lg-3">
+                            <div class="p-3" style="background: #1a1a1a; border-radius: 8px;">
+                                <small class="text-muted d-block mb-2">Valeur actuelle</small>
+                                <h5 class="mb-0 text-white" id="marginPositionCurrentValue">$0.00</h5>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-lg-3">
+                            <div class="p-3" style="background: #1a1a1a; border-radius: 8px;">
+                                <small class="text-muted d-block mb-2">Prix de liquidation</small>
+                                <h5 class="mb-0 text-danger" id="marginPositionLiquidationPrice">$0.00</h5>
+                                <small class="text-muted" id="marginPositionDistanceToLiquidation">0.00%</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-lg-3">
+                            <div class="p-3" style="background: #1a1a1a; border-radius: 8px;" id="marginRiskCard">
+                                <small class="text-muted d-block mb-2">Margin Risk</small>
+                                <h5 class="mb-0" id="marginRiskLevel">Low</h5>
+                                <small class="text-muted" id="marginRiskPercent">0.00%</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
     <!-- Paires similaires -->
     {% if similar_pairs %}
     <div class="row">
@@ -607,44 +774,64 @@
 <!-- TradingView Widget Script -->
 <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
 <script type="text/javascript">
-// Initialiser le widget TradingView Advanced Chart
-(function() {
-    var symbol = "{{ symbol }}";
-    
+// Variables globales pour le widget TradingView
+var tradingViewWidget = null;
+var tvSymbol = null;
+
+// Fonction pour déterminer le format du symbole pour TradingView
+function getTradingViewSymbol(symbol) {
     // Liste des symboles populaires qui fonctionnent sur TradingView
     var popularSymbols = ['BTCUSDT', 'ETHUSDT', 'BNBUSDT', 'XRPUSDT', 'ADAUSDT', 
                          'DOGEUSDT', 'SOLUSDT', 'MATICUSDT', 'DOTUSDT', 'LTCUSDT',
                          'AVAXUSDT', 'LINKUSDT', 'ATOMUSDT', 'ETCUSDT'];
     
-    // Déterm le format du symbole pour TradingView
-    var tvSymbol;
-    
     // Si c'est un symbole populaire, on utilise BINANCE:
     if (popularSymbols.includes(symbol)) {
-        tvSymbol = "BINANCE:" + symbol;
+        return "BINANCE:" + symbol;
     } else {
         // Pour les autres, on essaie différents formats
-        // Beaucoup de petits tokens ne sont disponibles que comme USDT pairs
         if (symbol.endsWith('USDT')) {
-            tvSymbol = "BINANCE:" + symbol;
+            return "BINANCE:" + symbol;
         } else if (symbol.endsWith('BUSD')) {
             // BUSD n'est plus supporté, essayer USDT à la place
             var baseAsset = symbol.replace('BUSD', '');
-            tvSymbol = "BINANCE:" + baseAsset + "USDT";
+            return "BINANCE:" + baseAsset + "USDT";
         } else if (symbol.endsWith('BTC')) {
-            tvSymbol = "BINANCE:" + symbol;
+            return "BINANCE:" + symbol;
         } else {
             // Par défaut, essayer avec BINANCE
-            tvSymbol = "BINANCE:" + symbol;
+            return "BINANCE:" + symbol;
         }
+    }
+}
+
+// Fonction pour créer/détruire le widget TradingView avec un intervalle donné
+function initTradingViewWidget(interval) {
+    var symbol = "{{ symbol }}";
+    tvSymbol = getTradingViewSymbol(symbol);
+    
+    // Détruire le widget existant s'il existe
+    if (tradingViewWidget) {
+        try {
+            tradingViewWidget.remove();
+        } catch (e) {
+            console.warn("[WARNING] Erreur lors de la suppression du widget:", e);
+        }
+        tradingViewWidget = null;
+    }
+    
+    // Vider le conteneur
+    var container = document.getElementById('tradingview_chart');
+    if (container) {
+        container.innerHTML = '';
     }
     
     try {
-        new TradingView.widget({
+        tradingViewWidget = new TradingView.widget({
             "width": "100%",
             "height": 600,
             "symbol": tvSymbol,
-            "interval": "D",
+            "interval": interval,
             "timezone": "Europe/Paris",
             "theme": "dark",
             "style": "1",  // 1 = Bougies japonaises (par défaut)
@@ -661,17 +848,10 @@
             "autosize": true,
             "hide_top_toolbar": false,
             "hide_legend": false,
-            "save_image": true,
             "show_popup_button": true,
             
             // Études (Indicateurs) par défaut
-            "studies": [
-                // Vous pouvez décommenter pour ajouter des indicateurs par défaut
-                // "MASimple@tv-basicstudies",           // Moving Average Simple
-                // "BB@tv-basicstudies",                  // Bollinger Bands
-                // "RSI@tv-basicstudies",                 // RSI
-                // "MACD@tv-basicstudies",                // MACD
-            ],
+            "studies": [],
             
             // Paramètres avancés
             "details": true,
@@ -688,20 +868,40 @@
             "support_host": "https://www.tradingview.com"
         });
         
-            console.log("[CHART] Graphique TradingView charge pour:", tvSymbol);
-            console.log("[INFO] Astuce: Vous pouvez cliquer sur 'Changer le symbole' en haut si ce token n'existe pas sur TradingView");
-        } catch (error) {
-            console.error("[ERREUR] Erreur lors du chargement du graphique TradingView:", error);
-        document.getElementById('tradingview_chart').innerHTML = 
-            '<div class="alert alert-warning m-3">' +
-            '<i class="bi bi-exclamation-triangle"></i> ' +
-            '<strong>Graphique temporairement indisponible</strong><br>' +
-            'Le symbole <code>' + symbol + '</code> n\'existe pas sur TradingView.<br><br>' +
-            '<small><strong>Suggestion:</strong> TradingView ne supporte que les paires principales de Binance. ' +
-            'Les données de prix actuelles proviennent directement de Binance et sont affichées ci-dessus.</small>' +
-            '</div>';
+        console.log("[CHART] Graphique TradingView chargé pour:", tvSymbol, "avec intervalle:", interval);
+    } catch (error) {
+        console.error("[ERREUR] Erreur lors du chargement du graphique TradingView:", error);
+        if (container) {
+            container.innerHTML = 
+                '<div class="alert alert-warning m-3">' +
+                '<i class="bi bi-exclamation-triangle"></i> ' +
+                '<strong>Graphique temporairement indisponible</strong><br>' +
+                'Le symbole <code>' + symbol + '</code> n\'existe pas sur TradingView.<br><br>' +
+                '<small><strong>Suggestion:</strong> TradingView ne supporte que les paires principales de Binance. ' +
+                'Les données de prix actuelles proviennent directement de Binance et sont affichées ci-dessus.</small>' +
+                '</div>';
+        }
     }
-})();
+}
+
+// Initialiser le widget TradingView avec l'intervalle par défaut (1m)
+// Attendre que le DOM soit chargé
+document.addEventListener('DOMContentLoaded', function() {
+    // Intervalle par défaut: 1 minute (1m)
+    var defaultInterval = "1";
+    initTradingViewWidget(defaultInterval);
+    
+    // Écouter les changements d'intervalle
+    document.querySelectorAll('input[name="chartInterval"]').forEach(function(radio) {
+        radio.addEventListener('change', function() {
+            if (this.checked) {
+                var interval = this.value;
+                console.log("[CHART] Changement d'intervalle vers:", interval);
+                initTradingViewWidget(interval);
+            }
+        });
+    });
+});
 
 function addToWatchlist(symbol) {
     fetch('/watchlist/add/', {
@@ -817,13 +1017,53 @@ function updateRecentTrades(data) {
 function updateTicker(data) {
     if (!data.ticker) return;
     
-    // Mettre à jour le prix principal
-    const priceElement = document.querySelector('h3.mb-0');
-    if (priceElement && data.ticker.price) {
-        priceElement.textContent = '$' + data.ticker.price;
+    // Formater un prix pour l'affichage
+    function formatPrice(price) {
+        const p = parseFloat(price);
+        if (isNaN(p) || p === 0) return '0.00';
+        if (p >= 1000) return p.toLocaleString('fr-FR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        if (p >= 1) return p.toFixed(2);
+        return p.toFixed(8).replace(/\.?0+$/, '');
     }
     
-    // Mettre à jour les statistiques (optionnel pour plus tard)
+    // Mettre à jour le prix principal
+    const priceElement = document.querySelector('h3.mb-0');
+    if (priceElement && data.ticker.lastPrice) {
+        priceElement.textContent = '$' + formatPrice(data.ticker.lastPrice);
+    }
+    
+    // Mettre à jour les statistiques 24h
+    if (data.ticker.highPrice) {
+        const high24hElement = document.getElementById('high24h');
+        if (high24hElement) {
+            high24hElement.textContent = '$' + formatPrice(data.ticker.highPrice);
+        }
+    }
+    
+    if (data.ticker.lowPrice) {
+        const low24hElement = document.getElementById('low24h');
+        if (low24hElement) {
+            low24hElement.textContent = '$' + formatPrice(data.ticker.lowPrice);
+        }
+    }
+    
+            // Mettre à jour les prix de trading
+            if (data.ticker.lastPrice) {
+                const buyPriceElement = document.getElementById('currentPriceBuy');
+                const sellPriceElement = document.getElementById('currentPriceSell');
+                const priceValue = parseFloat(data.ticker.lastPrice);
+                const formattedPrice = formatPrice(data.ticker.lastPrice);
+                
+                // Stocker le prix brut dans un attribut data pour les calculs
+                if (buyPriceElement) {
+                    buyPriceElement.textContent = formattedPrice;
+                    buyPriceElement.setAttribute('data-price', priceValue);
+                }
+                if (sellPriceElement) {
+                    sellPriceElement.textContent = formattedPrice;
+                    sellPriceElement.setAttribute('data-price', priceValue);
+                }
+            }
 }
 
 // Fonction principale pour récupérer les données
@@ -864,9 +1104,159 @@ function stopLiveUpdates() {
     }
 }
 
+// Vérifier automatiquement s'il y a une position margin pour ce symbole au chargement
+async function checkMarginPositionOnLoad() {
+    if (!SYMBOL) return;
+    
+    try {
+        const response = await fetch(`/watchlist/trading/margin-position/${SYMBOL}/`);
+        if (response.ok) {
+            const data = await response.json();
+            if (data.success && data.has_position) {
+                // Si une position margin existe, sélectionner automatiquement le compte margin
+                const marginRadio = document.getElementById('accountTypeMargin');
+                if (marginRadio) {
+                    marginRadio.checked = true;
+                    // Attendre un peu pour que le DOM soit prêt
+                    setTimeout(() => {
+                        updateAccountBalance();
+                    }, 100);
+                }
+            }
+        }
+    } catch (error) {
+        console.error('Erreur lors de la vérification de la position margin:', error);
+    }
+}
+
+// Fonction pour vérifier et afficher la position margin indépendamment du compte sélectionné
+async function checkAndDisplayMarginPosition() {
+    if (!SYMBOL) return;
+    
+    try {
+        const response = await fetch(`/watchlist/trading/margin-position/${SYMBOL}/`);
+        if (response.ok) {
+            const data = await response.json();
+            if (data.success && data.has_position) {
+                // Afficher la section même si le compte sélectionné n'est pas margin
+                document.getElementById('marginPositionSection').style.display = 'block';
+                
+                // Mettre à jour les informations
+                document.getElementById('marginPositionSymbol').textContent = data.symbol;
+                document.getElementById('marginPositionQuantity').textContent = data.quantity.toFixed(8);
+                document.getElementById('marginPositionEntryPrice').textContent = `$${data.avg_entry_price.toFixed(8)}`;
+                document.getElementById('marginPositionCurrentPrice').textContent = `$${data.current_price.toFixed(8)}`;
+                document.getElementById('marginPositionLeverage').textContent = `x${data.leverage.toFixed(2)}`;
+                document.getElementById('marginPositionCurrentValue').textContent = `$${data.current_value.toFixed(2)}`;
+                
+                // P&L avec couleur
+                const pnlElement = document.getElementById('marginPositionPnL');
+                const pnlPercentElement = document.getElementById('marginPositionPnLPercent');
+                if (data.unrealized_pnl >= 0) {
+                    pnlElement.textContent = `+$${data.unrealized_pnl.toFixed(2)}`;
+                    pnlElement.style.color = '#10b981';
+                    pnlPercentElement.textContent = `+${data.unrealized_pnl_percent.toFixed(2)}%`;
+                    pnlPercentElement.style.color = '#10b981';
+                } else {
+                    pnlElement.textContent = `$${data.unrealized_pnl.toFixed(2)}`;
+                    pnlElement.style.color = '#ef4444';
+                    pnlPercentElement.textContent = `${data.unrealized_pnl_percent.toFixed(2)}%`;
+                    pnlPercentElement.style.color = '#ef4444';
+                }
+                
+                // Prix de liquidation
+                if (data.liquidation_price) {
+                    document.getElementById('marginPositionLiquidationPrice').textContent = `$${data.liquidation_price.toFixed(8)}`;
+                    if (data.distance_to_liquidation !== null && data.distance_to_liquidation !== undefined) {
+                        const distanceElement = document.getElementById('marginPositionDistanceToLiquidation');
+                        distanceElement.textContent = `${data.distance_to_liquidation.toFixed(2)}%`;
+                        if (data.distance_to_liquidation < 10) {
+                            distanceElement.style.color = '#ef4444';
+                        } else if (data.distance_to_liquidation < 20) {
+                            distanceElement.style.color = '#f59e0b';
+                        } else {
+                            distanceElement.style.color = '#10b981';
+                        }
+                    }
+                } else {
+                    document.getElementById('marginPositionLiquidationPrice').textContent = 'N/A';
+                    document.getElementById('marginPositionDistanceToLiquidation').textContent = '';
+                }
+                
+                // Margin Risk
+                const riskCard = document.getElementById('marginRiskCard');
+                const riskLevelElement = document.getElementById('marginRiskLevel');
+                const riskPercentElement = document.getElementById('marginRiskPercent');
+                
+                riskPercentElement.textContent = `${data.risk_percent.toFixed(2)}%`;
+                
+                if (data.risk_level === 'high') {
+                    riskLevelElement.textContent = 'HIGH';
+                    riskLevelElement.style.color = '#ef4444';
+                    riskPercentElement.style.color = '#ef4444';
+                    riskCard.style.background = '#2a1a1a';
+                    riskCard.style.border = '1px solid #ef4444';
+                } else if (data.risk_level === 'medium') {
+                    riskLevelElement.textContent = 'MEDIUM';
+                    riskLevelElement.style.color = '#f59e0b';
+                    riskPercentElement.style.color = '#f59e0b';
+                    riskCard.style.background = '#2a251a';
+                    riskCard.style.border = '1px solid #f59e0b';
+                } else {
+                    riskLevelElement.textContent = 'LOW';
+                    riskLevelElement.style.color = '#10b981';
+                    riskPercentElement.style.color = '#10b981';
+                    riskCard.style.background = '#1a2a1a';
+                    riskCard.style.border = '1px solid #10b981';
+                }
+            } else {
+                // Masquer la section si pas de position
+                document.getElementById('marginPositionSection').style.display = 'none';
+            }
+        }
+    } catch (error) {
+        console.error('Erreur lors de la vérification de la position margin:', error);
+        document.getElementById('marginPositionSection').style.display = 'none';
+    }
+}
+
 // Démarrer au chargement de la page
 document.addEventListener('DOMContentLoaded', function() {
+    // Initialiser les attributs data-price avec les prix du template
+    const buyPriceElement = document.getElementById('currentPriceBuy');
+    const sellPriceElement = document.getElementById('currentPriceSell');
+    if (buyPriceElement && !buyPriceElement.getAttribute('data-price')) {
+        const initialPrice = parseFloat(buyPriceElement.textContent.replace(/,/g, '') || 0);
+        buyPriceElement.setAttribute('data-price', initialPrice);
+    }
+    if (sellPriceElement && !sellPriceElement.getAttribute('data-price')) {
+        const initialPrice = parseFloat(sellPriceElement.textContent.replace(/,/g, '') || 0);
+        sellPriceElement.setAttribute('data-price', initialPrice);
+    }
+    
     startLiveUpdates();
+    
+    // Vérifier et afficher la position margin si elle existe (indépendamment du compte sélectionné)
+    checkAndDisplayMarginPosition();
+    
+    // Vérifier s'il y a une position margin pour sélectionner automatiquement le compte margin
+    checkMarginPositionOnLoad();
+    
+    // Initialiser le solde du compte par défaut (trading)
+    updateAccountBalance();
+    
+    // Écouter les changements du sélecteur de compte (boutons radio)
+    document.querySelectorAll('input[name="accountType"]').forEach(radio => {
+        radio.addEventListener('change', updateAccountBalance);
+    });
+    
+    // Écouter les changements du levier pour mettre à jour le coût
+    document.getElementById('leverage')?.addEventListener('change', updateBuyCost);
+    
+    // Mettre à jour la position margin toutes les 3 secondes (peu importe le compte sélectionné)
+    setInterval(function() {
+        checkAndDisplayMarginPosition();
+    }, 3000);
 });
 
 // Arrêter quand on quitte la page
@@ -878,73 +1268,278 @@ window.addEventListener('beforeunload', function() {
 // PAPER TRADING FUNCTIONS
 // ========================================
 
+// Mettre à jour le solde selon le compte sélectionné
+async function updateAccountBalance() {
+    const accountType = document.querySelector('input[name="accountType"]:checked')?.value || 'trading';
+    const leverageSection = document.getElementById('leverageSection');
+    
+    // Afficher/masquer le sélecteur de levier
+    if (accountType === 'margin') {
+        leverageSection.style.display = 'block';
+        // Récupérer et afficher les informations de position margin
+        updateMarginPosition();
+    } else {
+        leverageSection.style.display = 'none';
+        // Masquer la section position margin si on n'est pas en mode margin
+        document.getElementById('marginPositionSection').style.display = 'none';
+    }
+    
+    // Récupérer le solde du compte (faire un fetch vers l'API)
+    try {
+        const response = await fetch(`/watchlist/portfolio/${accountType}/balance/`);
+        if (response.ok) {
+            const data = await response.json();
+            document.getElementById('tradingBalance').textContent = `$${data.balance.toFixed(2)}`;
+            
+            // Mettre à jour les positions si disponibles
+            if (data.positions && data.positions.length > 0) {
+                const posSection = document.getElementById('positionSection');
+                const totalQty = data.positions.reduce((sum, p) => sum + parseFloat(p.quantity), 0);
+                const avgPrice = data.positions.reduce((sum, p) => sum + parseFloat(p.purchase_price) * parseFloat(p.quantity), 0) / totalQty;
+                document.getElementById('heldQuantity').textContent = `${totalQty.toFixed(8)} {{ symbol }}`;
+                posSection.style.display = 'block';
+            } else {
+                document.getElementById('positionSection').style.display = 'none';
+            }
+        }
+    } catch (error) {
+        console.error('Erreur lors de la récupération du solde:', error);
+    }
+    
+    updateBuyCost();
+}
+
+// Mettre à jour les informations de position margin en temps réel
+async function updateMarginPosition() {
+    const accountType = document.querySelector('input[name="accountType"]:checked')?.value || 'trading';
+    
+    // Vérifier si on est en mode margin et qu'on a un symbole
+    if (accountType !== 'margin' || !SYMBOL) {
+        document.getElementById('marginPositionSection').style.display = 'none';
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/watchlist/trading/margin-position/${SYMBOL}/`);
+        if (!response.ok) {
+            throw new Error('Erreur lors de la récupération des informations de position');
+        }
+        
+        const data = await response.json();
+        
+        if (data.success && data.has_position) {
+            // Afficher la section
+            document.getElementById('marginPositionSection').style.display = 'block';
+            
+            // Mettre à jour les informations
+            document.getElementById('marginPositionSymbol').textContent = data.symbol;
+            document.getElementById('marginPositionQuantity').textContent = data.quantity.toFixed(8);
+            document.getElementById('marginPositionEntryPrice').textContent = `$${data.avg_entry_price.toFixed(8)}`;
+            document.getElementById('marginPositionCurrentPrice').textContent = `$${data.current_price.toFixed(8)}`;
+            document.getElementById('marginPositionLeverage').textContent = `x${data.leverage.toFixed(2)}`;
+            document.getElementById('marginPositionCurrentValue').textContent = `$${data.current_value.toFixed(2)}`;
+            
+            // P&L avec couleur
+            const pnlElement = document.getElementById('marginPositionPnL');
+            const pnlPercentElement = document.getElementById('marginPositionPnLPercent');
+            if (data.unrealized_pnl >= 0) {
+                pnlElement.textContent = `+$${data.unrealized_pnl.toFixed(2)}`;
+                pnlElement.style.color = '#10b981';
+                pnlPercentElement.textContent = `+${data.unrealized_pnl_percent.toFixed(2)}%`;
+                pnlPercentElement.style.color = '#10b981';
+            } else {
+                pnlElement.textContent = `$${data.unrealized_pnl.toFixed(2)}`;
+                pnlElement.style.color = '#ef4444';
+                pnlPercentElement.textContent = `${data.unrealized_pnl_percent.toFixed(2)}%`;
+                pnlPercentElement.style.color = '#ef4444';
+            }
+            
+            // Prix de liquidation
+            if (data.liquidation_price) {
+                document.getElementById('marginPositionLiquidationPrice').textContent = `$${data.liquidation_price.toFixed(8)}`;
+                if (data.distance_to_liquidation !== null && data.distance_to_liquidation !== undefined) {
+                    const distanceElement = document.getElementById('marginPositionDistanceToLiquidation');
+                    distanceElement.textContent = `${data.distance_to_liquidation.toFixed(2)}%`;
+                    if (data.distance_to_liquidation < 10) {
+                        distanceElement.style.color = '#ef4444';
+                    } else if (data.distance_to_liquidation < 20) {
+                        distanceElement.style.color = '#f59e0b';
+                    } else {
+                        distanceElement.style.color = '#10b981';
+                    }
+                }
+            } else {
+                document.getElementById('marginPositionLiquidationPrice').textContent = 'N/A';
+                document.getElementById('marginPositionDistanceToLiquidation').textContent = '';
+            }
+            
+            // Margin Risk
+            const riskCard = document.getElementById('marginRiskCard');
+            const riskLevelElement = document.getElementById('marginRiskLevel');
+            const riskPercentElement = document.getElementById('marginRiskPercent');
+            
+            riskPercentElement.textContent = `${data.risk_percent.toFixed(2)}%`;
+            
+            if (data.risk_level === 'high') {
+                riskLevelElement.textContent = 'HIGH';
+                riskLevelElement.style.color = '#ef4444';
+                riskPercentElement.style.color = '#ef4444';
+                riskCard.style.background = '#2a1a1a';
+                riskCard.style.border = '1px solid #ef4444';
+            } else if (data.risk_level === 'medium') {
+                riskLevelElement.textContent = 'MEDIUM';
+                riskLevelElement.style.color = '#f59e0b';
+                riskPercentElement.style.color = '#f59e0b';
+                riskCard.style.background = '#2a251a';
+                riskCard.style.border = '1px solid #f59e0b';
+            } else {
+                riskLevelElement.textContent = 'LOW';
+                riskLevelElement.style.color = '#10b981';
+                riskPercentElement.style.color = '#10b981';
+                riskCard.style.background = '#1a2a1a';
+                riskCard.style.border = '1px solid #10b981';
+            }
+        } else {
+            // Masquer la section si pas de position
+            document.getElementById('marginPositionSection').style.display = 'none';
+        }
+    } catch (error) {
+        console.error('Erreur lors de la mise à jour de la position margin:', error);
+        // Masquer la section en cas d'erreur
+        document.getElementById('marginPositionSection').style.display = 'none';
+    }
+}
+
 // Calculer et afficher le coût d'achat en temps réel
-document.getElementById('buyQuantity')?.addEventListener('input', function() {
-    const quantity = parseFloat(this.value) || 0;
-    const price = parseFloat(document.getElementById('currentPriceBuy').textContent) || 0;
-    const cost = quantity * price;
-    document.getElementById('buyCost').textContent = `Coût: $${cost.toFixed(2)}`;
-});
+function updateBuyCost() {
+    const quantity = parseFloat(document.getElementById('buyQuantity').value) || 0;
+    const priceElement = document.getElementById('currentPriceBuy');
+    const price = parseFloat(priceElement?.getAttribute('data-price') || priceElement?.textContent.replace(/,/g, '') || 0);
+    const accountType = document.querySelector('input[name="accountType"]:checked')?.value || 'trading';
+    const leverage = parseInt(document.getElementById('leverage')?.value || 1);
+    
+    const totalValue = quantity * price;
+    let cost = totalValue;
+    let marginRequired = 0;
+    
+    // Pour margin avec levier, calculer la marge requise
+    if (accountType === 'margin' && leverage > 1) {
+        marginRequired = totalValue / leverage;
+        cost = marginRequired;
+        
+        // Afficher l'info de marge
+        document.getElementById('marginInfo').style.display = 'block';
+        document.getElementById('requiredMargin').textContent = marginRequired.toFixed(2);
+    } else {
+        document.getElementById('marginInfo').style.display = 'none';
+    }
+    
+    document.getElementById('buyCost').textContent = accountType === 'margin' && leverage > 1 
+        ? `Marge requise: $${cost.toFixed(2)} (Valeur: $${totalValue.toFixed(2)})`
+        : `Coût: $${cost.toFixed(2)}`;
+}
 
 // Calculer et afficher le revenu de vente en temps réel
-document.getElementById('sellQuantity')?.addEventListener('input', function() {
-    const quantity = parseFloat(this.value) || 0;
-    const price = parseFloat(document.getElementById('currentPriceSell').textContent) || 0;
+function updateSellRevenue() {
+    const quantity = parseFloat(document.getElementById('sellQuantity').value) || 0;
+    const priceElement = document.getElementById('currentPriceSell');
+    const price = parseFloat(priceElement?.getAttribute('data-price') || priceElement?.textContent.replace(/,/g, '') || 0);
     const revenue = quantity * price;
-    document.getElementById('sellRevenue').textContent = `Revenu: $${revenue.toFixed(2)}`;
-});
+    const fee = revenue * 0.001; // 0.1% de frais
+    const netRevenue = revenue - fee;
+    document.getElementById('sellRevenue').textContent = `Revenu: $${revenue.toFixed(2)} (Net: $${netRevenue.toFixed(2)} après frais)`;
+}
 
 // Fonction pour acheter un token
 async function buyToken() {
     const quantity = parseFloat(document.getElementById('buyQuantity').value);
-    const price = parseFloat(document.getElementById('currentPriceBuy').textContent);
+    const priceElement = document.getElementById('currentPriceBuy');
+    const price = parseFloat(priceElement?.getAttribute('data-price') || priceElement?.textContent.replace(/,/g, '') || 0);
+    const accountType = document.querySelector('input[name="accountType"]:checked')?.value || 'trading';
+    const leverage = parseInt(document.getElementById('leverage')?.value || 1);
     
     if (!quantity || quantity <= 0) {
         alert('[ATTENTION] Veuillez entrer une quantite valide');
         return;
     }
     
-    const totalCost = quantity * price;
-    const currentBalance = parseFloat(document.getElementById('tradingBalance').textContent.replace('$', '').replace(',', ''));
+    const totalValue = quantity * price;
+    const requiredMargin = accountType === 'margin' && leverage > 1 ? totalValue / leverage : totalValue;
+    const currentBalance = parseFloat(document.getElementById('tradingBalance').textContent.replace(/[$,]/g, ''));
     
-    if (totalCost > currentBalance) {
-        alert(`[ERREUR] Fonds insuffisants!\nSolde: $${currentBalance.toFixed(2)}\nRequis: $${totalCost.toFixed(2)}`);
+    if (requiredMargin > currentBalance) {
+        alert(`[ERREUR] Fonds insuffisants!\nSolde: $${currentBalance.toFixed(2)}\nRequis: $${requiredMargin.toFixed(2)}`);
         return;
     }
     
-    if (!confirm(`Confirmer l'achat de ${quantity} {{ symbol }} à $${price}?\n\nCoût total: $${totalCost.toFixed(2)}`)) {
+    const confirmMsg = accountType === 'margin' && leverage > 1
+        ? `Confirmer l'achat de ${quantity} {{ symbol }} à $${price}?\n\nValeur: $${totalValue.toFixed(2)}\nMarge requise: $${requiredMargin.toFixed(2)}\nLevier: x${leverage}`
+        : `Confirmer l'achat de ${quantity} {{ symbol }} à $${price}?\n\nCoût total: $${totalValue.toFixed(2)}`;
+    
+    if (!confirm(confirmMsg)) {
         return;
     }
     
     try {
         const response = await fetch('/watchlist/trading/buy/', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
             body: JSON.stringify({
                 symbol: '{{ symbol }}',
                 quantity: quantity,
-                price: price
+                price: price,
+                account_type: accountType,
+                leverage: leverage
             })
         });
+        
+        // Vérifier si la réponse est JSON
+        const contentType = response.headers.get("content-type");
+        if (!contentType || !contentType.includes("application/json")) {
+            const text = await response.text();
+            throw new Error(`Réponse non-JSON reçue: ${text.substring(0, 200)}`);
+        }
         
         const data = await response.json();
         
         if (data.success) {
-            alert(`[OK] ${data.message}\n\nNouveau solde: $${data.new_balance.toFixed(2)}`);
-            // Recharger la page pour mettre à jour les informations
-            location.reload();
+            let msg = `[OK] ${data.message}\n\nNouveau solde: $${data.new_balance.toFixed(2)}`;
+            
+            // Ajouter les informations de liquidation si margin
+            if (data.liquidation_price) {
+                msg += `\n\n⚠️ INFORMATION MARGIN:\n`;
+                msg += `Levier: x${data.leverage}\n`;
+                msg += `Prix de liquidation estimé: $${data.liquidation_price.toFixed(2)}\n`;
+                msg += `Surveillez ce prix pour éviter la liquidation!`;
+            }
+            
+            alert(msg);
+            // Mettre à jour le solde sans recharger toute la page
+            document.getElementById('tradingBalance').textContent = `$${data.new_balance.toFixed(2)}`;
+            // Mettre à jour la position margin si on est en mode margin
+            if (accountType === 'margin') {
+                setTimeout(() => updateMarginPosition(), 500);
+            }
+            // Recharger la page pour mettre à jour les positions
+            setTimeout(() => location.reload(), 1000);
         } else {
             alert(`[ERREUR] Erreur: ${data.error}`);
         }
     } catch (error) {
-        alert(`[ERREUR] Erreur lors de l'achat: ${error}`);
+        alert(`[ERREUR] Erreur lors de l'achat: ${error.message}`);
+        console.error('Détails de l\'erreur:', error);
     }
 }
 
 // Fonction pour vendre un token
 async function sellToken() {
     const quantity = parseFloat(document.getElementById('sellQuantity').value);
-    const price = parseFloat(document.getElementById('currentPriceSell').textContent);
+    const priceElement = document.getElementById('currentPriceSell');
+    const price = parseFloat(priceElement?.getAttribute('data-price') || priceElement?.textContent.replace(/,/g, '') || 0);
+    const accountType = document.querySelector('input[name="accountType"]:checked')?.value || 'trading';
     const held = parseFloat(document.getElementById('heldQuantity')?.textContent.split(' ')[0] || 0);
     
     if (!quantity || quantity <= 0) {
@@ -958,52 +1553,103 @@ async function sellToken() {
     }
     
     const totalRevenue = quantity * price;
+    const fee = totalRevenue * 0.001;
+    const netRevenue = totalRevenue - fee;
     
-    if (!confirm(`Confirmer la vente de ${quantity} {{ symbol }} à $${price}?\n\nRevenu total: $${totalRevenue.toFixed(2)}`)) {
+    if (!confirm(`Confirmer la vente de ${quantity} {{ symbol }} à $${price}?\n\nRevenu brut: $${totalRevenue.toFixed(2)}\nFrais (0.1%): $${fee.toFixed(2)}\nRevenu net: $${netRevenue.toFixed(2)}`)) {
         return;
     }
     
     try {
         const response = await fetch('/watchlist/trading/sell/', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
             body: JSON.stringify({
                 symbol: '{{ symbol }}',
                 quantity: quantity,
-                price: price
+                price: price,
+                account_type: accountType
             })
         });
+        
+        // Vérifier si la réponse est JSON
+        const contentType = response.headers.get("content-type");
+        if (!contentType || !contentType.includes("application/json")) {
+            const text = await response.text();
+            throw new Error(`Réponse non-JSON reçue: ${text.substring(0, 200)}`);
+        }
         
         const data = await response.json();
         
         if (data.success) {
-            alert(`[OK] ${data.message}\n\nNouveau solde: $${data.new_balance.toFixed(2)}`);
-            // Recharger la page pour mettre à jour les informations
-            location.reload();
+            let msg = `[OK] ${data.message}\n\nNouveau solde: $${data.new_balance.toFixed(2)}`;
+            if (data.pnl !== null && data.pnl !== undefined) {
+                msg += `\nP&L: $${data.pnl.toFixed(2)}`;
+            }
+            alert(msg);
+            // Mettre à jour le solde sans recharger toute la page
+            document.getElementById('tradingBalance').textContent = `$${data.new_balance.toFixed(2)}`;
+            // Mettre à jour la position margin si on est en mode margin
+            if (accountType === 'margin') {
+                setTimeout(() => updateMarginPosition(), 500);
+            }
+            // Recharger la page pour mettre à jour les positions
+            setTimeout(() => location.reload(), 1000);
         } else {
             alert(`[ERREUR] Erreur: ${data.error}`);
         }
     } catch (error) {
-        alert(`[ERREUR] Erreur lors de la vente: ${error}`);
+        alert(`[ERREUR] Erreur lors de la vente: ${error.message}`);
+        console.error('Détails de l\'erreur:', error);
     }
+}
+
+// Fonction pour récupérer le cookie CSRF
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
 }
 
 // Mettre à jour les prix de trading en temps réel avec les données de l'API
 function updateTradingPrices(data) {
-    if (data.ticker && data.ticker.price) {
-        document.getElementById('currentPriceBuy').textContent = data.ticker.price;
-        document.getElementById('currentPriceSell').textContent = data.ticker.price;
+    if (data.ticker && (data.ticker.price || data.ticker.lastPrice)) {
+        const priceValue = parseFloat(data.ticker.price || data.ticker.lastPrice);
+        const formattedPrice = formatPrice(data.ticker.price || data.ticker.lastPrice);
+        
+        const buyPriceElement = document.getElementById('currentPriceBuy');
+        const sellPriceElement = document.getElementById('currentPriceSell');
+        
+        if (buyPriceElement) {
+            buyPriceElement.textContent = formattedPrice;
+            buyPriceElement.setAttribute('data-price', priceValue);
+        }
+        if (sellPriceElement) {
+            sellPriceElement.textContent = formattedPrice;
+            sellPriceElement.setAttribute('data-price', priceValue);
+        }
         
         // Recalculer les coûts/revenus si des quantités sont entrées
         const buyQty = parseFloat(document.getElementById('buyQuantity').value) || 0;
         const sellQty = parseFloat(document.getElementById('sellQuantity').value) || 0;
-        const price = parseFloat(data.ticker.price);
         
         if (buyQty > 0) {
-            document.getElementById('buyCost').textContent = `Coût: $${(buyQty * price).toFixed(2)}`;
+            document.getElementById('buyCost').textContent = `Coût: $${(buyQty * priceValue).toFixed(2)}`;
         }
         if (sellQty > 0) {
-            document.getElementById('sellRevenue').textContent = `Revenu: $${(sellQty * price).toFixed(2)}`;
+            document.getElementById('sellRevenue').textContent = `Revenu: $${(sellQty * priceValue).toFixed(2)}`;
         }
     }
 }

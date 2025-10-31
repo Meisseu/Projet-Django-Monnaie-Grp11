@@ -58,8 +58,9 @@ class WatchlistView(LoginRequiredMixin, View):
                     'low': ticker.get('lowPrice', '0'),
                 })
 
-        # Récupérer le portfolio
-        portfolio_items = Portfolio.objects.filter(user_profile=profile)
+        # Récupérer le portfolio (pour tous les comptes de l'utilisateur)
+        # Note: Cette vue est l'ancienne watchlist, on garde user_profile pour compatibilité
+        portfolio_items = Portfolio.objects.filter(user_profile=profile).select_related('account')
         portfolio_data = []
         total_value = 0.0
         total_profit_loss = 0.0

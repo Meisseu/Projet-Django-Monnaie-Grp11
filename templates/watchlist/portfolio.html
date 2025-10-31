@@ -1,0 +1,246 @@
+{% extends "base.html" %}
+
+{% block title %}Portfolio - Crypto Monitor{% endblock %}
+
+{% block extra_css %}
+<style>
+    .account-card {
+        transition: transform 0.3s, box-shadow 0.3s;
+        cursor: pointer;
+    }
+    .account-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(99, 102, 241, 0.3);
+    }
+    .pnl-positive {
+        color: #10b981;
+    }
+    .pnl-negative {
+        color: #ef4444;
+    }
+    .chart-container {
+        position: relative;
+        height: 250px;
+        width: 100%;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- En-tête -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="mb-4">
+                <i class="bi bi-wallet2"></i> Portfolio
+            </h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'home:index' %}">Accueil</a></li>
+                    <li class="breadcrumb-item active">Portfolio</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+    
+    <!-- Résumé global -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-md-3">
+                            <h5 class="text-muted mb-1">Capital Total</h5>
+                            <h3 class="fw-bold">${{ total_balance|floatformat:2 }}</h3>
+                        </div>
+                        <div class="col-md-3">
+                            <h5 class="text-muted mb-1">Capital Initial</h5>
+                            <h3 class="fw-bold">${{ total_initial|floatformat:2 }}</h3>
+                        </div>
+                        <div class="col-md-3">
+                            <h5 class="text-muted mb-1">P&L Total</h5>
+                            <h3 class="fw-bold {% if total_pnl >= 0 %}pnl-positive{% else %}pnl-negative{% endif %}">
+                                ${{ total_pnl|floatformat:2 }} ({{ total_pnl_percent|floatformat:2 }}%)
+                            </h3>
+                        </div>
+                        <div class="col-md-3">
+                            <h5 class="text-muted mb-1">Total Trades</h5>
+                            <h3 class="fw-bold">{{ total_trades }}</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Comptes -->
+    <div class="row g-4 mb-4">
+        {% for account in accounts %}
+        <div class="col-md-4">
+            <a href="{% if account.account_type == 'finance' %}{% url 'watchlist:portfolio_finance' %}{% elif account.account_type == 'trading' %}{% url 'watchlist:portfolio_trading' %}{% elif account.account_type == 'margin' %}{% url 'watchlist:portfolio_margin' %}{% else %}{% url 'watchlist:account_detail' account.account_type %}{% endif %}" class="text-decoration-none">
+                <div class="card account-card h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <div>
+                                <h5 class="card-title mb-1">
+                                    <i class="bi bi-{% if account.account_type == 'finance' %}bank{% elif account.account_type == 'trading' %}coin{% else %}credit-card-2-front{% endif %}"></i>
+                                    {{ account.get_account_type_display }}
+                                </h5>
+                                <small class="text-muted">Capital disponible</small>
+                            </div>
+                            <span class="badge bg-{% if account.account_type == 'finance' %}primary{% elif account.account_type == 'trading' %}success{% else %}warning{% endif %}">
+                                {{ account.trades.count }} trades
+                            </span>
+                        </div>
+                        
+                        <h2 class="mb-3">${{ account.balance|floatformat:2 }}</h2>
+                        
+                        {% with pnl=account.get_total_pnl pnl_pct=account.get_total_pnl_percent %}
+                        <div class="mb-3">
+                            <small class="text-muted d-block">P&L depuis le début</small>
+                            <h4 class="mb-0 {% if pnl >= 0 %}pnl-positive{% else %}pnl-negative{% endif %}">
+                                ${{ pnl|floatformat:2 }} ({{ pnl_pct|floatformat:2 }}%)
+                            </h4>
+                        </div>
+                        {% endwith %}
+                        
+                        <!-- Mini graphique -->
+                        <div class="chart-container mt-3">
+                            <canvas id="chart-{{ account.account_type }}"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <!-- Trades récents -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-clock-history"></i> Trades récents
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if recent_trades %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Compte</th>
+                                    <th>Paire</th>
+                                    <th>Type</th>
+                                    <th>Quantité</th>
+                                    <th>Prix</th>
+                                    <th>Total</th>
+                                    <th>P&L</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for trade in recent_trades %}
+                                <tr>
+                                    <td>{{ trade.executed_at|date:"d/m/Y H:i" }}</td>
+                                    <td>
+                                        <span class="badge bg-{% if trade.account.account_type == 'finance' %}primary{% elif trade.account.account_type == 'trading' %}success{% else %}warning{% endif %}">
+                                            {{ trade.account.get_account_type_display }}
+                                        </span>
+                                    </td>
+                                    <td><strong>{{ trade.symbol }}</strong></td>
+                                    <td>
+                                        <span class="badge bg-{% if trade.side == 'buy' %}success{% else %}danger{% endif %}">
+                                            {{ trade.get_side_display }}
+                                        </span>
+                                    </td>
+                                    <td>{{ trade.quantity|floatformat:8 }}</td>
+                                    <td>${{ trade.price|floatformat:8 }}</td>
+                                    <td>${{ trade.total|floatformat:2 }}</td>
+                                    <td>
+                                        {% if trade.profit_loss is not None %}
+                                            <span class="{% if trade.profit_loss >= 0 %}pnl-positive{% else %}pnl-negative{% endif %}">
+                                                ${{ trade.profit_loss|floatformat:2 }}
+                                            </span>
+                                        {% else %}
+                                            <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="bi bi-inbox" style="font-size: 3rem; color: #6366f1;"></i>
+                        <p class="text-muted mt-3">Aucun trade pour le moment</p>
+                        <a href="{% url 'search:index' %}" class="btn btn-primary">
+                            <i class="bi bi-search"></i> Rechercher des paires
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Graphiques pour chaque compte
+const accountCharts = JSON.parse('{{ account_charts|escapejs }}');
+
+{% for account in accounts %}
+const ctx{{ account.account_type|title }} = document.getElementById('chart-{{ account.account_type }}');
+if (ctx{{ account.account_type|title }}) {
+    const chartData = accountCharts['{{ account.account_type }}'] || { labels: [], balances: [] };
+    
+    new Chart(ctx{{ account.account_type|title }}, {
+        type: 'line',
+        data: {
+            labels: chartData.labels || [],
+            datasets: [{
+                label: 'Balance',
+                data: chartData.balances || [],
+                borderColor: '#6366f1',
+                backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                borderWidth: 2,
+                fill: true,
+                tension: 0.4,
+                pointRadius: 0,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    mode: 'index',
+                    intersect: false,
+                }
+            },
+            scales: {
+                x: { display: false },
+                y: {
+                    display: true,
+                    grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                    ticks: { 
+                        color: '#94a3b8',
+                        maxTicksLimit: 5,
+                        callback: function(value) {
+                            return '$' + value.toFixed(0);
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+{% endfor %}
+</script>
+{% endblock %}
+

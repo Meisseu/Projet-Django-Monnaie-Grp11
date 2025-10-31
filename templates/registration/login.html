@@ -1,47 +1,105 @@
 {% extends "base.html" %}
-{% block title %}Connexion{% endblock %}
+
+{% block title %}Connexion - Crypto Monitor{% endblock %}
+
 {% block content %}
-<div class="mx-auto" style="max-width:480px">
-    <h3 class="mb-3">Connexion</h3>
-
-    <form method="post">
-        {% csrf_token %}
-
-        {# redirection: si on venait d'une page protégée #}
-        {% if request.GET.next %}
-        <input type="hidden" name="next" value="{{ request.GET.next }}">
-        {% endif %}
-
-        {{ form.non_field_errors }}
-
-        <div class="mb-3">
-            <label class="form-label">Nom d'utilisateur</label>
-            <input type="text" name="username" class="form-control" required autofocus>
-            {% if form.username.errors %}
-            <div class="text-danger small mt-1">
-                {{ form.username.errors|join:", " }}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-5 col-md-7">
+            <div class="card shadow-lg">
+                <div class="card-body p-5">
+                    <div class="text-center mb-4">
+                        <h2 class="fw-bold" style="background: linear-gradient(135deg, #6366f1, #8b5cf6); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                            <i class="bi bi-box-arrow-in-right"></i> Connexion
+                        </h2>
+                        <p class="text-muted">Accédez à votre compte Crypto Monitor</p>
+                    </div>
+                    
+                    {% if form.errors %}
+                    <div class="alert alert-danger" role="alert">
+                        <i class="bi bi-exclamation-triangle"></i> 
+                        <strong>Erreur :</strong> Nom d'utilisateur ou mot de passe incorrect.
+                    </div>
+                    {% endif %}
+                    
+                    {% if messages %}
+                        {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                        {% endfor %}
+                    {% endif %}
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <!-- Nom d'utilisateur -->
+                        <div class="mb-3">
+                            <label for="id_username" class="form-label fw-bold">
+                                <i class="bi bi-person"></i> Nom d'utilisateur
+                            </label>
+                            <input type="text" 
+                                   name="username" 
+                                   class="form-control form-control-lg" 
+                                   id="id_username" 
+                                   placeholder="Votre nom d'utilisateur"
+                                   required
+                                   autofocus>
+                        </div>
+                        
+                        <!-- Mot de passe -->
+                        <div class="mb-4">
+                            <label for="id_password" class="form-label fw-bold">
+                                <i class="bi bi-lock"></i> Mot de passe
+                            </label>
+                            <input type="password" 
+                                   name="password" 
+                                   class="form-control form-control-lg" 
+                                   id="id_password" 
+                                   placeholder="Votre mot de passe"
+                                   required>
+                        </div>
+                        
+                        <!-- Bouton de connexion -->
+                        <div class="d-grid mb-3">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="bi bi-arrow-right-circle"></i> Se connecter
+                            </button>
+                        </div>
+                        
+                        <!-- Lien d'inscription -->
+                        <div class="text-center">
+                            <p class="text-muted mb-0">
+                                Pas encore de compte ? 
+                                <a href="{% url 'accounts:signup' %}" class="text-decoration-none fw-bold" style="color: #6366f1;">
+                                    Créer un compte gratuitement
+                                </a>
+                            </p>
+                        </div>
+                        
+                        <!-- Hidden next field -->
+                        {% if next %}
+                            <input type="hidden" name="next" value="{{ next }}">
+                        {% endif %}
+                    </form>
+                </div>
             </div>
-            {% endif %}
-        </div>
-
-        <div class="mb-3">
-            <label class="form-label">Mot de passe</label>
-            <input type="password" name="password" class="form-control" required>
-            {% if form.password.errors %}
-            <div class="text-danger small mt-1">
-                {{ form.password.errors|join:", " }}
+            
+            <!-- Lien retour -->
+            <div class="text-center mt-3">
+                <a href="{% url 'landing:index' %}" class="text-muted text-decoration-none">
+                    <i class="bi bi-arrow-left"></i> Retour à l'accueil
+                </a>
             </div>
-            {% endif %}
         </div>
-
-        <button class="btn btn-primary w-100">Se connecter</button>
-    </form>
-
-    <p class="mt-3">
-        Pas encore de compte ?
-        <a href="{% url 'accounts:signup' %}{% if request.GET.next %}?next={{ request.GET.next|urlencode }}{% endif %}">
-            Créer un compte
-        </a>
-    </p>
+    </div>
 </div>
+
+<style>
+    .form-control:focus {
+        border-color: #6366f1;
+        box-shadow: 0 0 0 0.2rem rgba(99, 102, 241, 0.25);
+    }
+</style>
 {% endblock %}

@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Authentification - DEX Simulator{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/aurora-background.css' %}">
+<style>
+    /* Override body background for auth page */
+    body {
+        background: #000000 !important;
+    }
+    
+    .auth-container {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem 1rem;
+    }
+    
+    .auth-card {
+        background: rgba(30, 41, 59, 0.95);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(99, 102, 241, 0.3);
+        border-radius: 24px;
+        padding: 3rem;
+        max-width: 500px;
+        width: 100%;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    }
+    
+    .auth-title {
+        font-size: 2rem;
+        font-weight: 700;
+        text-align: center;
+        background: linear-gradient(135deg, #6366f1, #8b5cf6);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 1rem;
+    }
+    
+    .auth-subtitle {
+        text-align: center;
+        color: #94a3b8;
+        margin-bottom: 2.5rem;
+        font-size: 1.1rem;
+    }
+    
+    .auth-button {
+        width: 100%;
+        padding: 1rem 2rem;
+        font-size: 1.125rem;
+        font-weight: 600;
+        border-radius: 12px;
+        transition: all 0.3s ease;
+        margin-bottom: 1rem;
+        text-decoration: none;
+        display: block;
+        text-align: center;
+    }
+    
+    .auth-button-primary {
+        background: linear-gradient(135deg, #6366f1, #8b5cf6);
+        color: white;
+        border: none;
+    }
+    
+    .auth-button-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 30px rgba(99, 102, 241, 0.4);
+        color: white;
+    }
+    
+    .auth-button-outline {
+        background: transparent;
+        color: #8b92ff;
+        border: 2px solid #6366f1;
+    }
+    
+    .auth-button-outline:hover {
+        background: rgba(99, 102, 241, 0.1);
+        color: #6366f1;
+        transform: translateY(-2px);
+    }
+    
+    @media (min-width: 768px) {
+        .auth-title {
+            font-size: 2.5rem;
+        }
+        
+        .auth-card {
+            padding: 4rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Aurora Background -->
+<div class="aurora-background" id="auroraBackground"></div>
+
+<div class="auth-container" style="position: relative; z-index: 1;">
+    <div class="auth-card">
+        <h1 class="auth-title">
+            <i class="bi bi-shield-lock"></i> Bienvenue
+        </h1>
+        <p class="auth-subtitle">
+            Accédez à votre simulateur de trading crypto
+        </p>
+        
+        <div class="d-flex flex-column gap-3">
+            <a href="{% url 'accounts:signup' %}" class="auth-button auth-button-primary">
+                <i class="bi bi-person-plus"></i> Créer un compte
+            </a>
+            
+            <a href="{% url 'accounts:login' %}" class="auth-button auth-button-outline">
+                <i class="bi bi-box-arrow-in-right"></i> Se connecter
+            </a>
+        </div>
+        
+        <div class="text-center mt-4">
+            <a href="{% url 'landing:index' %}" class="text-muted text-decoration-none" style="font-size: 0.9rem;">
+                <i class="bi bi-arrow-left"></i> Retour à l'accueil
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
